@@ -33,13 +33,15 @@ export async function findAllDependencies ( fileOps: FileOps, dir: string, debug
   if ( debug ) console.log ( `groupId ${groupId} modules ${modules}` )
   const mods: ModuleDependency[] = await Promise.all ( modules.map ( async module => {
     const moduleDir = path.resolve ( fileOps.join ( dir, module ) )
-    if (debug)console.log(`moduleDir ${moduleDir}`)
+    if ( debug ) console.log ( `moduleDir ${moduleDir}` )
     const modulePom = await loadAndParse ( fileOps, moduleDir )
     const allDeps = extractDependencies ( modulePom, debug );
     if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
     const description = modulePom.project.description
+    const properties = modulePom.project?.properties ?? {}
+    const kind = properties[ 'backstage.kind' ] ?? "Component"
     const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
-    return { module, groupId, artifactId: module, deps, description }
+    return { module, groupId, artifactId: module, deps, description, kind }
   } ) )
   return mods;
 }
@@ -56,8 +58,8 @@ export function addDependenciesCommand ( context: CommandContext ) {
 export function addInternalDependencyCommand ( context: CommandContext ) {
   context.command.command ( "dep-int <module>" )
     .description ( "lists the internal dependencies for a single module" )
-    .option( "--debug")
-    .action ( async ( module , opts) => {
+    .option ( "--debug" )
+    .action ( async ( module, opts ) => {
       const dir = context.command.optsWithGlobals ().directory ?? context.currentDirectory
       const moduleData = await loadAndListModules ( context.fileOps, dir );
       if ( !moduleData.modules.includes ( module ) ) throw new Error ( `module ${module} not found` )

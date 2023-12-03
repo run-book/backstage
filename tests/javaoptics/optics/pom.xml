@@ -10,7 +10,9 @@
   </parent>
 
   <artifactId>optics</artifactId>
-
+  <properties>
+    <backstage.kind>API</backstage.kind>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>one.xingyi</groupId>

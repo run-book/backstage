@@ -15,5 +15,5 @@ spec:
   type: library
   owner: Not Known
   lifecycle: experimental
-  dependsOn:
-   -  one.xingyi.interfaces
+  dependsOn: 
+   -  component:one.xingyi.interfaces

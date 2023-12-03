@@ -3,7 +3,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: one.xingyi.interfaces
-  description: Not provided in the POM
+  description: A set of interfaces for things like FunctionWithException. Needed to handle Java's truly terrible use of checked exceptions 
   tags:
     - java
     - maven
@@ -15,5 +15,4 @@ spec:
   type: library
   owner: Not Known
   lifecycle: experimental
-  dependsOn:
-   -  one.xingyi.interfaces
+  

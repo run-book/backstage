@@ -15,6 +15,6 @@ spec:
   type: library
   owner: Not Known
   lifecycle: experimental
-  dependsOn:
-   -  one.xingyi.fp
-   -  one.xingyi.helpers
+  dependsOn: 
+   -  component:one.xingyi.fp
+   -  component:one.xingyi.helpers

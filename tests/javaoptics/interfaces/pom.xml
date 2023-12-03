@@ -8,13 +8,7 @@
     <artifactId>javaoptics</artifactId>
     <version>1.5.10-SNAPSHOT</version>
   </parent>
-
-  <artifactId>helpers</artifactId>
-
-  <dependencies>
-    <dependency>
-      <groupId>one.xingyi</groupId>
-      <artifactId>interfaces</artifactId>
-    </dependency></dependencies>
+  <artifactId>interfaces</artifactId>
+  <description>A set of interfaces for things like FunctionWithException. Needed to handle Java's truly terrible use of checked exceptions </description>
 
 </project>

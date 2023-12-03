@@ -23,6 +23,7 @@ export interface ModuleDependency {
   groupId: string
   artifactId: string
   description: string
+  kind: string
   deps: Artifact[]
 }
 
