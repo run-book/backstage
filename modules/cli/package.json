@@ -5,7 +5,7 @@
   "main": "dist/index",
   "types": "dist/index",
   "bin": {
-    "laoban": "dist/index.js"
+    "backstage": "dist/index.js"
   },
   "browserslist": {
     "development": [

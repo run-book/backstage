@@ -1,4 +1,4 @@
-import { applyTemplate, catalogTemplateDir, CommandContext, defaultCatalog } from "./context";
+import { applyCatalogTemplate, applyRootCatalogTemplate, catalogTemplateDir, CommandContext, defaultCatalog, defaultRootCatalog, rootCatalogTemplateDir } from "./context";
 import { Command } from "commander";
 import { findAllDependencies } from "./pom.commands";
 import { ModuleDependency } from "./pom";
@@ -9,16 +9,22 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
     .option ( '--dryrun', 'Just print what would happen' )
     .option ( '-o|--owner <owner>', 'owner of the catalog', 'Not Known' )
     .option ( '-l|--lifecycle <lifecycle>', 'lifecycle of the catalog', 'experimental' )
+    .option ( '-n|--name <name>', 'name of the root componment', )
     .action ( async ( opts ) => {
       const { owner, lifecycle, dryrun } = opts
-      const { command, fileOps, currentDirectory,gitstore } = context
+      const { command, fileOps, currentDirectory, gitstore } = context
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
-      const repo= await gitstore.currentRepo(dir)
+      const repo = await gitstore.currentRepo ( dir )
+      const name = opts.name ?? `Mono repo at ${repo}`
       const modData: ModuleDependency[] = await findAllDependencies ( fileOps, dir );
+      const rootCatalogDir = rootCatalogTemplateDir ( name, modData )
+      const rootCatalog = applyRootCatalogTemplate ( rootCatalogDir, defaultRootCatalog )
+
+
       await Promise.all ( modData.map ( async md => {
         const catalogDir = catalogTemplateDir ( owner, md, repo, lifecycle )
         const template = defaultCatalog
-        const catalog = applyTemplate ( catalogDir, template )
+        const catalog = applyCatalogTemplate ( catalogDir, template )
         const filename = fileOps.join ( dir, md.module, `catalog-info.yaml` )
         if ( dryrun ) {
           console.log ( 'filename', filename )
@@ -27,6 +33,12 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
         } else
           await fileOps.saveFile ( filename, catalog )
       } ) )
+      if ( dryrun ) {
+        console.log ( 'filename', fileOps.join ( dir, `catalog-info.yaml` ) )
+        console.log ( rootCatalog )
+        console.log ()
+      } else
+        await fileOps.saveFile ( fileOps.join ( dir, `catalog-info.yaml` ), rootCatalog )
     } )
 }
 

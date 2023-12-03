@@ -4,7 +4,7 @@
   "description": "A cli for backstage tools",
   "packageJson": {
     "bin":             {
-      "laoban": "dist/index.js"
+      "backstage": "dist/index.js"
     },
     "dependencies":    {
       "fs-extra":              "^9.0.1",
