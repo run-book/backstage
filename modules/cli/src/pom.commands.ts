@@ -4,6 +4,7 @@ import path from "path";
 import { FileOps } from "@laoban/fileops";
 import { extractDependencies, isLocal, loadAndListModules, loadAndParse, ModuleDependency } from "./pom";
 import * as util from "util";
+import { debug } from "util";
 
 export function addListModulesCommand ( context: CommandContext ) {
   context.command.command ( "list" )
@@ -26,15 +27,18 @@ export function addDependencyCommand ( context: CommandContext ) {
       console.log ( modulePom.modules )
     } )
 }
-export async function findAllDependencies ( fileOps: FileOps, dir ): Promise<ModuleDependency[]> {
+export async function findAllDependencies ( fileOps: FileOps, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
   const moduleData = await loadAndListModules ( fileOps, dir );
   const { groupId, modules } = moduleData;
+  if ( debug ) console.log ( `groupId ${groupId} modules ${modules}` )
   const mods: ModuleDependency[] = await Promise.all ( modules.map ( async module => {
     const moduleDir = path.resolve ( fileOps.join ( dir, module ) )
+    if (debug)console.log(`moduleDir ${moduleDir}`)
     const modulePom = await loadAndParse ( fileOps, moduleDir )
-    const allDeps = extractDependencies ( modulePom );
+    const allDeps = extractDependencies ( modulePom, debug );
+    if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
     const description = modulePom.project.description
-    const deps = allDeps.filter ( isLocal ( moduleData ) )
+    const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
     return { module, groupId, artifactId: module, deps, description }
   } ) )
   return mods;
@@ -42,28 +46,30 @@ export async function findAllDependencies ( fileOps: FileOps, dir ): Promise<Mod
 export function addDependenciesCommand ( context: CommandContext ) {
   context.command.command ( "deps" )
     .description ( "lists the dependencies for all modules" )
-    .action ( async () => {
+    .option ( "--debug" )
+    .action ( async ( opts ) => {
       const dir = context.command.optsWithGlobals ().directory ?? context.currentDirectory
-      const result = await findAllDependencies ( context.fileOps, dir );
+      const result = await findAllDependencies ( context.fileOps, dir, opts.debug );
       console.log ( util.inspect ( result, false, null ) )
     } )
 }
 export function addInternalDependencyCommand ( context: CommandContext ) {
   context.command.command ( "dep-int <module>" )
     .description ( "lists the internal dependencies for a single module" )
-    .action ( async ( module ) => {
+    .option( "--debug")
+    .action ( async ( module , opts) => {
       const dir = context.command.optsWithGlobals ().directory ?? context.currentDirectory
       const moduleData = await loadAndListModules ( context.fileOps, dir );
       if ( !moduleData.modules.includes ( module ) ) throw new Error ( `module ${module} not found` )
       const moduleDir = path.resolve ( context.fileOps.join ( dir, module ) )
       const modulePom = await loadAndParse ( context.fileOps, moduleDir )
-      const deps = extractDependencies ( modulePom );
-      const localDeps = deps.filter ( isLocal ( moduleData ) )
+      const deps = extractDependencies ( modulePom, opts.debug );
+      const localDeps = deps.filter ( isLocal ( moduleData, opts.debug ) )
       console.log ( localDeps )
     } )
 }
 export function addPomCommands ( context: CommandContext ) {
-  const command: Command = context.command.command ( 'pom' ).description ( 'commands to setup git repos for the students taking the course' )
+  const command: Command = context.command.command ( 'pom' ).description ( 'commands to look at the maven pom' )
   const newContext: CommandContext = { ...context, command }
   addListModulesCommand ( newContext );
   addDependencyCommand ( newContext );

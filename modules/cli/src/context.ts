@@ -18,7 +18,7 @@ export interface RootCatalogTemplateDir {
   targets: string
 }
 export function rootCatalogTemplateDir ( name: string, mds: ModuleDependency[] ): RootCatalogTemplateDir {
-  const targets = mds.map ( md => `   -  ./${md.module}` ).join ( '\n' )
+  const targets = mds.map ( md => `   -  ./${md.module}/catalog-info.yaml` ).join ( '\n' )
   return { name, targets }
 }
 export function applyRootCatalogTemplate ( dir: RootCatalogTemplateDir, template: string ): string {

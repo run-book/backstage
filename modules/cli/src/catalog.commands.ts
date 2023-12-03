@@ -10,13 +10,14 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
     .option ( '-o|--owner <owner>', 'owner of the catalog', 'Not Known' )
     .option ( '-l|--lifecycle <lifecycle>', 'lifecycle of the catalog', 'experimental' )
     .option ( '-n|--name <name>', 'name of the root componment', )
+    .option ( '--debug' )
     .action ( async ( opts ) => {
-      const { owner, lifecycle, dryrun } = opts
+      const { owner, lifecycle, dryrun, debug } = opts
       const { command, fileOps, currentDirectory, gitstore } = context
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const repo = await gitstore.currentRepo ( dir )
       const name = opts.name ?? `Mono repo at ${repo}`
-      const modData: ModuleDependency[] = await findAllDependencies ( fileOps, dir );
+      const modData: ModuleDependency[] = await findAllDependencies ( fileOps, dir, debug );
       const rootCatalogDir = rootCatalogTemplateDir ( name, modData )
       const rootCatalog = applyRootCatalogTemplate ( rootCatalogDir, defaultRootCatalog )
 

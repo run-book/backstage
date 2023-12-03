@@ -12,7 +12,7 @@ export interface Artifact {
   optional?: boolean
   exclusions?: string[]
 }
-export interface RawModuleData{
+export interface RawModuleData {
   description: string
   groupId: string
   modules: string[]
@@ -27,13 +27,15 @@ export interface ModuleDependency {
 }
 
 
-export function extractDependencies ( pom: any ): Artifact[] {
+export function extractDependencies ( pom: any, debug: boolean ): Artifact[] {
+  if ( debug ) console.log ( `extractDependencies`, pom?.project?.dependencies )
   const dependencies = pom?.project?.dependencies?.dependency
-  if ( Array.isArray ( dependencies ) ) return dependencies
-  return [ dependencies ] ?? []
+  if ( dependencies === undefined ) return []
+  return Array.isArray ( dependencies ) ? dependencies : [ dependencies ]
 }
 
-export const isLocal = ( moduleData: RawModuleData ) => ( artifact: Artifact ): boolean => {
+export const isLocal = ( moduleData: RawModuleData, debug: boolean ) => ( artifact: Artifact ): boolean => {
+  if ( debug ) console.log ( `isLocal`, artifact )
   const groupIdMatches = artifact.groupId == moduleData.groupId;
   const moduleMatches = moduleData.modules.includes ( artifact.artifactId );
   return groupIdMatches && moduleMatches

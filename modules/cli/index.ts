@@ -21,7 +21,7 @@ export function findVersion () {
 
 
 const program: Command = require ( 'commander' )
-  .name ( 'gittraining' )
+  .name ( 'backstage' )
   .usage ( '<command> [options]' )
   .version ( findVersion () )
   .option ( '-d|--directory <directory>', "directory to work in" )
