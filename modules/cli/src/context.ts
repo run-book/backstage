@@ -24,11 +24,12 @@ export function rootCatalogTemplateDictionary ( name: string, mds: ModuleDepende
   return { name, targets }
 }
 export async function applyRootCatalogTemplate ( fileOps: FileOps, dir: string, dic: RootCatalogTemplateDir ): Promise<string> {
-  const template = await fileOps.loadFileOrUrl ( fileOps.join ( dir, `root.template.yaml` ) )
+  const url = dir + "/root.template.yaml";
+  const template = await fileOps.loadFileOrUrl ( url )
   return derefence ( `RootCatalog`, dic, template, { variableDefn: doubleXmlVariableDefn } )
 }
 
-export const templateDir: string = 'src/template'
+export const templateDir: string = 'https://raw.githubusercontent.com/run-book/backstage/master/modules/cli/src/template'
 export interface CatalogTemplateDictionary {
   groupId: string
   artifactId: string
@@ -57,9 +58,9 @@ export function catalogTemplateDic ( owner: string, md: ModuleDependency, reposi
 
 async function loadTemplateForKind ( fileOps: FileOps, dir: string, kind: string ) {
   try {
-    return await fileOps.loadFileOrUrl ( fileOps.join ( dir, `${kind}.template.yaml` ) );
+    return await fileOps.loadFileOrUrl ( `${dir}/${kind}.template.yaml` );
   } catch ( err ) {
-    return await fileOps.loadFileOrUrl ( fileOps.join ( dir, `default.template.yaml` ) );
+    return await fileOps.loadFileOrUrl ( `${dir}/default.template.yaml` );
   }
 }
 export async function applyCatalogTemplateForKind ( fileOps: FileOps, dir: string, kind: string, dic: CatalogTemplateDictionary ): Promise<string> {
