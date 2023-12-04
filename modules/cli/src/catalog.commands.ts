@@ -1,30 +1,17 @@
-import { applyCatalogTemplate, applyRootCatalogTemplate, catalogTemplateDir, CommandContext, defaultCatalog, defaultRootCatalog, rootCatalogTemplateDir } from "./context";
+import { applyCatalogTemplateForKind, applyRootCatalogTemplate, catalogTemplateDic, CommandContext, rootCatalogTemplateDictionary, templateDir } from "./context";
 import { Command } from "commander";
-import { findAllDependencies } from "./pom.commands";
-import { ModuleDependency } from "./pom";
-import { FileOps, findChildDirsUnder } from "@laoban/fileops";
+import { findAllDependencies, ModuleDependency } from "./pom";
+import { FileAndKind, searchDirectory } from "./file.search";
 
-const searchDirectory = async ( fileOps: FileOps, dir: string, allFiles: string[] ) => {
-  const files = await fileOps.listFiles ( dir );
 
-  await Promise.all ( files.map ( async file => {
-    const filepath = fileOps.join ( dir, file );
-    if ( await fileOps.isDirectory ( filepath ) ) {
-      await searchDirectory ( fileOps, filepath, allFiles );
-    } else if ( file === 'backstage.service.yaml' ) {
-      allFiles.push ( filepath );
-    }
-  } ) );
-};
-export function addFindServicesCommand ( context: CommandContext ) {
-  context.command.command ( "services" )
-    .description ( "finds the services in the repo" )
+export function addFindCommand ( context: CommandContext ) {
+  context.command.command ( "find" )
+    .description ( "finds the files 'backstage.xxx.yaml in the repo" )
     .option ( '--debug' )
     .action ( async ( opts ) => {
       const { command, fileOps, currentDirectory, gitstore } = context
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
-      let dirs: string[] = []
-      await searchDirectory ( fileOps, dir, dirs );
+      let dirs: FileAndKind[] = await searchDirectory ( fileOps, dir );
       dirs.forEach ( dir => console.log ( dir ) )
     } )
 
@@ -41,21 +28,20 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
       const { owner, lifecycle, dryrun, debug } = opts
       const { command, fileOps, currentDirectory, gitstore } = context
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
-      let dirs: string[] = []
-      await searchDirectory ( fileOps, dir, dirs );
-      const relativeDirs = dirs.map ( d => './' + fileOps.relative ( dir, d ).replace(/\\/g, '/') )
+      let dirs: FileAndKind[] = await searchDirectory ( fileOps, dir );
+      const relativeDirs = dirs.map ( d => './' + fileOps.relative ( dir, d.file ).replace ( /\\/g, '/' ) )
 
       const repo = await gitstore.currentRepo ( dir )
       const name = opts.name ?? `Mono repo at ${repo}`
       const modData: ModuleDependency[] = await findAllDependencies ( fileOps, dir, debug );
-      const rootCatalogDir = rootCatalogTemplateDir ( name, modData, relativeDirs )
-      const rootCatalog = applyRootCatalogTemplate ( rootCatalogDir, defaultRootCatalog )
+      const rootCatalogDic = rootCatalogTemplateDictionary ( name, modData, relativeDirs )
+      const rootCatalog = await applyRootCatalogTemplate ( fileOps, templateDir, rootCatalogDic )
 
 
       await Promise.all ( modData.map ( async md => {
-        const catalogDir = catalogTemplateDir ( owner, md, repo, lifecycle )
-        const template = defaultCatalog
-        const catalog = applyCatalogTemplate ( catalogDir, template )
+        const catalogDic = catalogTemplateDic ( owner, md, repo, lifecycle )
+
+        const catalog = await applyCatalogTemplateForKind ( fileOps, templateDir, md.kind, catalogDic )
         const filename = fileOps.join ( dir, md.module, `catalog-info.yaml` )
         if ( dryrun ) {
           console.log ( 'filename', filename )
@@ -77,5 +63,5 @@ export function addCatalogCommands ( context: CommandContext ) {
   const command: Command = context.command.command ( 'catalog' ).description ( 'commands to setup backstage catalogs' )
   const newContext: CommandContext = { ...context, command }
   addMakeCatalogCommand ( newContext );
-  addFindServicesCommand ( newContext );
+  addFindCommand ( newContext );
 }

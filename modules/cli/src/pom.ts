@@ -1,6 +1,7 @@
 import { FileOps } from "@laoban/fileops";
 import path from "path";
 import { parseStringPromise } from "xml2js";
+import { NameAnd } from "@laoban/utils";
 
 export interface Artifact {
   groupId: string
@@ -24,10 +25,22 @@ export interface ModuleDependency {
   artifactId: string
   description: string
   kind: string
+  properties: NameAnd<string>
   deps: Artifact[]
 }
 
-
+const filterBackspaceKeys = ( jsonObj: NameAnd<string> ): NameAnd<string> => {
+  const result: NameAnd<string> = {};
+  const regex = /^backstage\.(.+)$/;
+  Object.keys ( jsonObj ).forEach ( key => {
+    const match = key.match ( regex );
+    if ( match ) {
+      const newKey = match[ 1 ];
+      result[ newKey ] = jsonObj[ key ];
+    }
+  } );
+  return result;
+};
 export function extractDependencies ( pom: any, debug: boolean ): Artifact[] {
   if ( debug ) console.log ( `extractDependencies`, pom?.project?.dependencies )
   const dependencies = pom?.project?.dependencies?.dependency
@@ -57,8 +70,6 @@ export function extractModules ( pom: any ): string[] {
 export async function loadAndParse ( fileOps: FileOps, dir: string ) {
   return await parseStringPromise ( await loadPom ( fileOps, dir ), { explicitArray: false } );
 }
-
-
 export async function loadAndListModules ( fileOps: FileOps, dir: string | undefined ): Promise<RawModuleData> {
   const pom = await loadAndParse ( fileOps, dir );
   const modules = extractModules ( pom )
@@ -66,4 +77,23 @@ export async function loadAndListModules ( fileOps: FileOps, dir: string | undef
   const version = pom?.project?.version
   const description = pom?.project?.description
   return { modules, groupId, version, description }
+}
+export async function findAllDependencies ( fileOps: FileOps, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
+  const moduleData = await loadAndListModules ( fileOps, dir );
+  const { groupId, modules } = moduleData;
+  if ( debug ) console.log ( `groupId ${groupId} modules ${modules}` )
+  const mods: ModuleDependency[] = await Promise.all ( modules.map ( async module => {
+    const moduleDir = path.resolve ( fileOps.join ( dir, module ) )
+    if ( debug ) console.log ( `moduleDir ${moduleDir}` )
+    const modulePom = await loadAndParse ( fileOps, moduleDir )
+    const allDeps = extractDependencies ( modulePom, debug );
+    if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
+    const description = modulePom.project.description
+    const propertiesObj = modulePom.project?.properties ?? {}
+    const properties = filterBackspaceKeys ( propertiesObj )
+    const kind = properties?.kind ?? "Component"
+    const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
+    return { module, groupId, artifactId: module, deps, description, kind, properties }
+  } ) )
+  return mods;
 }

@@ -2,7 +2,7 @@ import { CommandContext } from "./context";
 import { Command } from "commander";
 import path from "path";
 import { FileOps } from "@laoban/fileops";
-import { extractDependencies, isLocal, loadAndListModules, loadAndParse, ModuleDependency } from "./pom";
+import { extractDependencies, findAllDependencies, isLocal, loadAndListModules, loadAndParse, ModuleDependency } from "./pom";
 import * as util from "util";
 import { debug } from "util";
 
@@ -27,24 +27,7 @@ export function addDependencyCommand ( context: CommandContext ) {
       console.log ( modulePom.modules )
     } )
 }
-export async function findAllDependencies ( fileOps: FileOps, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
-  const moduleData = await loadAndListModules ( fileOps, dir );
-  const { groupId, modules } = moduleData;
-  if ( debug ) console.log ( `groupId ${groupId} modules ${modules}` )
-  const mods: ModuleDependency[] = await Promise.all ( modules.map ( async module => {
-    const moduleDir = path.resolve ( fileOps.join ( dir, module ) )
-    if ( debug ) console.log ( `moduleDir ${moduleDir}` )
-    const modulePom = await loadAndParse ( fileOps, moduleDir )
-    const allDeps = extractDependencies ( modulePom, debug );
-    if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
-    const description = modulePom.project.description
-    const properties = modulePom.project?.properties ?? {}
-    const kind = properties[ 'backstage.kind' ] ?? "Component"
-    const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
-    return { module, groupId, artifactId: module, deps, description, kind }
-  } ) )
-  return mods;
-}
+
 export function addDependenciesCommand ( context: CommandContext ) {
   context.command.command ( "deps" )
     .description ( "lists the dependencies for all modules" )
