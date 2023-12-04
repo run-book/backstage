@@ -12,7 +12,7 @@ metadata:
     backstage.io/maven-group-id: <<groupId>>
     backstage.io/maven-artifact-id: <<artifactId>>
 spec:
-  type: <<spec.type|default(Library)>>
+  type: <<spec.type|default(library)>>
   owner: <<owner>>
   lifecycle: <<lifecycle>>
   <<dependsOn>>
