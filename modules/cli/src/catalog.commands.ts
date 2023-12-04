@@ -1,7 +1,9 @@
-import { applyCatalogTemplateForKind, applyRootCatalogTemplate, catalogTemplateDic, CommandContext, rootCatalogTemplateDictionary, templateDir } from "./context";
+import { CommandContext } from "./context";
+import { applyCatalogTemplateForKind, applyRootCatalogTemplate, catalogTemplateDic, rootCatalogTemplateDictionary, templateDir } from "./templates";
 import { Command } from "commander";
-import { findAllDependencies, loadAndListModules, ModuleDependency, RawModuleData } from "./pom";
+import { findAllDependencies, loadAndListModules } from "./pom";
 import { FileAndKind, searchDirectory } from "./file.search";
+import { ModuleDependency, RawModuleData } from "./module";
 
 
 export function addFindCommand ( context: CommandContext ) {
@@ -41,7 +43,7 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
 
 
       await Promise.all ( modData.map ( async md => {
-        const catalogDic = catalogTemplateDic ( owner, md, moduleData.scm, lifecycle )
+        const catalogDic = catalogTemplateDic ( owner, moduleData, md, lifecycle )
 
         let catalog = await applyCatalogTemplateForKind ( fileOps, template, md.kind, catalogDic )
         if ( debug ) catalog = catalog + "\n#DEBUG\n" + JSON.stringify ( catalogDic, undefined, 2 ) + "\n#DEBUG\n" + JSON.stringify ( md, undefined, 2 )

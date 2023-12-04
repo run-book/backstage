@@ -1,10 +1,9 @@
 import { CommandContext } from "./context";
 import { Command } from "commander";
 import path from "path";
-import { FileOps } from "@laoban/fileops";
-import { extractDependencies, findAllDependencies, isLocal, loadAndListModules, loadAndParse, ModuleDependency, RawModuleData } from "./pom";
+import { extractDependencies, findAllDependencies, loadAndListModules, loadAndParse } from "./pom";
 import * as util from "util";
-import { debug } from "util";
+import { isLocal, RawModuleData } from "./module";
 
 export function addListModulesCommand ( context: CommandContext ) {
   context.command.command ( "list" )

@@ -2,34 +2,8 @@ import { FileOps } from "@laoban/fileops";
 import path from "path";
 import { parseStringPromise } from "xml2js";
 import { NameAnd } from "@laoban/utils";
+import { Artifact, isLocal, ModuleDependency, RawModuleData } from "./module";
 
-export interface Artifact {
-  groupId: string
-  artifactId: string
-  version: string
-  packaging: string
-  classifier?: string
-  scope?: string
-  optional?: boolean
-  exclusions?: string[]
-}
-export interface RawModuleData {
-  description: string
-  groupId: string
-  modules: string[]
-  version: string
-  scm: string
-}
-export interface ModuleDependency {
-  module: string
-  ignore: boolean
-  groupId: string
-  artifactId: string
-  description: string
-  kind: string
-  properties: NameAnd<string>
-  deps: Artifact[]
-}
 
 const filterBackspaceKeys = ( jsonObj: NameAnd<string> ): NameAnd<string> => {
   const result: NameAnd<string> = {};
@@ -47,15 +21,11 @@ export function extractDependencies ( pom: any, debug: boolean ): Artifact[] {
   if ( debug ) console.log ( `extractDependencies`, pom?.project?.dependencies )
   const dependencies = pom?.project?.dependencies?.dependency
   if ( dependencies === undefined ) return []
-  return Array.isArray ( dependencies ) ? dependencies : [ dependencies ]
+  const deps = Array.isArray ( dependencies ) ? dependencies : [ dependencies ];
+  deps.forEach ( dep => {dep[ 'fullname' ] = `${dep.groupId}.${dep.artifactId}`} )
+  return deps
 }
 
-export const isLocal = ( moduleData: RawModuleData, debug: boolean ) => ( artifact: Artifact ): boolean => {
-  if ( debug ) console.log ( `isLocal`, artifact )
-  const groupIdMatches = artifact.groupId == moduleData.groupId;
-  const moduleMatches = moduleData.modules.includes ( artifact.artifactId );
-  return groupIdMatches && moduleMatches
-};
 export async function loadPom ( fileOps: FileOps, pomDir: string ): Promise<String> {
   const pomFile = path.resolve ( fileOps.join ( pomDir, "pom.xml" ) )
   if ( await fileOps.isFile ( pomFile ) ) {
@@ -79,7 +49,8 @@ export async function loadAndListModules ( fileOps: FileOps, dir: string | undef
   const version = pom?.project?.version
   const description = pom?.project?.description
   const scm = pom?.project?.scm?.url ?? pom?.project?.scm?.connection ?? 'Unknown scm'
-  return { modules, groupId, version, description, scm }
+  const properties = filterBackspaceKeys ( pom.project?.properties ?? {} )
+  return { modules, groupId, version, description, scm, properties }
 }
 export async function findAllDependencies ( fileOps: FileOps, moduleData: RawModuleData, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
   const { groupId, modules } = moduleData;
@@ -91,12 +62,12 @@ export async function findAllDependencies ( fileOps: FileOps, moduleData: RawMod
     const allDeps = extractDependencies ( modulePom, debug );
     if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
     const description = modulePom.project.description
-    const propertiesObj = modulePom.project?.properties ?? {}
-    const properties = filterBackspaceKeys ( propertiesObj )
+    const properties = filterBackspaceKeys ( modulePom.project?.properties ?? {} )
     const kind = properties?.kind ?? "Component"
     const ignore = properties?.ignore === 'true' ?? false
     const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
-    return { module, groupId, artifactId: module, deps, description, kind, properties, ignore }
+    const fullname = `${groupId}.${module}`
+    return { module, groupId, artifactId: module, fullname, deps, description, kind, properties, ignore }
   } ) )
   const result = mods.filter ( m => !m.ignore )
   return result;

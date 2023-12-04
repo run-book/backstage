@@ -2,7 +2,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: <<kind>>
 metadata:
-  name: <<groupId>>.<<artifactId>>
+  name: <<fullname>>
   description: <<description>>
   tags:
     - java
