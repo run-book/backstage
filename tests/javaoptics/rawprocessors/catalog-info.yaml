@@ -12,7 +12,7 @@ metadata:
     backstage.io/maven-group-id: one.xingyi
     backstage.io/maven-artifact-id: rawprocessors
 spec:
-  type: library
+  type: Library
   owner: Not Known
   lifecycle: experimental
   dependsOn: 

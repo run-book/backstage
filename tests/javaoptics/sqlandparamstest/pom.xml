@@ -9,7 +9,9 @@
     <version>1.5.10-SNAPSHOT</version>
   </parent>
 
-
+  <properties>
+    <backstage.ignore>true</backstage.ignore>
+  </properties>
   <artifactId>sqlandparamstest</artifactId>
 
   <dependencies>

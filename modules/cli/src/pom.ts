@@ -21,6 +21,7 @@ export interface RawModuleData {
 }
 export interface ModuleDependency {
   module: string
+  ignore: boolean
   groupId: string
   artifactId: string
   description: string
@@ -92,8 +93,10 @@ export async function findAllDependencies ( fileOps: FileOps, dir: string, debug
     const propertiesObj = modulePom.project?.properties ?? {}
     const properties = filterBackspaceKeys ( propertiesObj )
     const kind = properties?.kind ?? "Component"
+    const ignore = properties?.ignore === 'true' ?? false
     const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
-    return { module, groupId, artifactId: module, deps, description, kind, properties }
+    return { module, groupId, artifactId: module, deps, description, kind, properties, ignore }
   } ) )
-  return mods;
+  const result = mods.filter ( m => !m.ignore )
+  return result;
 }

@@ -29,6 +29,7 @@ export async function applyRootCatalogTemplate ( fileOps: FileOps, dir: string, 
   return derefence ( `RootCatalog`, dic, template, { variableDefn: doubleXmlVariableDefn } )
 }
 
+// export const templateDir: string = 'src/template'
 export const templateDir: string = 'https://raw.githubusercontent.com/run-book/backstage/master/modules/cli/src/template'
 export interface CatalogTemplateDictionary {
   groupId: string

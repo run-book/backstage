@@ -42,7 +42,8 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
       await Promise.all ( modData.map ( async md => {
         const catalogDic = catalogTemplateDic ( owner, md, repo, lifecycle )
 
-        const catalog = await applyCatalogTemplateForKind ( fileOps, template, md.kind, catalogDic )
+        let catalog = await applyCatalogTemplateForKind ( fileOps, template, md.kind, catalogDic )
+        if (debug) catalog= catalog + "\n#DEBUG\n" + JSON.stringify(catalogDic,undefined,2) + "\n#DEBUG\n" + JSON.stringify(md,undefined,2)
         const filename = fileOps.join ( dir, md.module, `catalog-info.yaml` )
         if ( dryrun ) {
           console.log ( 'filename', filename )
