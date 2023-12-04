@@ -3,12 +3,11 @@ import { FileOps } from "@laoban/fileops";
 import { ModuleDependency } from "./pom";
 import { derefence } from "@laoban/variables";
 import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
-import { Gitstore } from "./gitstore";
+
 
 export interface CommandContext {
   command: Command
   fileOps: FileOps
-  gitstore: Gitstore
   currentDirectory: string
 }
 

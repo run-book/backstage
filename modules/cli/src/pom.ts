@@ -18,6 +18,7 @@ export interface RawModuleData {
   groupId: string
   modules: string[]
   version: string
+  scm: string
 }
 export interface ModuleDependency {
   module: string
@@ -77,10 +78,10 @@ export async function loadAndListModules ( fileOps: FileOps, dir: string | undef
   const groupId = pom?.project?.groupId
   const version = pom?.project?.version
   const description = pom?.project?.description
-  return { modules, groupId, version, description }
+  const scm = pom?.project?.scm?.url ?? pom?.project?.scm?.connection ?? 'Unknown scm'
+  return { modules, groupId, version, description, scm }
 }
-export async function findAllDependencies ( fileOps: FileOps, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
-  const moduleData = await loadAndListModules ( fileOps, dir );
+export async function findAllDependencies ( fileOps: FileOps, moduleData: RawModuleData, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
   const { groupId, modules } = moduleData;
   if ( debug ) console.log ( `groupId ${groupId} modules ${modules}` )
   const mods: ModuleDependency[] = await Promise.all ( modules.map ( async module => {

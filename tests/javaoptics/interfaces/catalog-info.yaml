@@ -8,11 +8,11 @@ metadata:
     - java
     - maven
   annotations:
-    backstage.io/source-location: git@github.com:run-book/backstage.git
+    backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
     backstage.io/maven-group-id: one.xingyi
     backstage.io/maven-artifact-id: interfaces
 spec:
-  type: Library
-  owner: Not Known
+  type: library
+  owner: phil-rice
   lifecycle: experimental
   

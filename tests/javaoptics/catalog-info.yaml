@@ -2,7 +2,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
-  name: Mono repo at git@github.com:run-book/backstage.git
+  name: Mono repo at https://github.com/phil-rice/javaoptics.git
 spec:
   type: url
   targets:

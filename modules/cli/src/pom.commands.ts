@@ -2,7 +2,7 @@ import { CommandContext } from "./context";
 import { Command } from "commander";
 import path from "path";
 import { FileOps } from "@laoban/fileops";
-import { extractDependencies, findAllDependencies, isLocal, loadAndListModules, loadAndParse, ModuleDependency } from "./pom";
+import { extractDependencies, findAllDependencies, isLocal, loadAndListModules, loadAndParse, ModuleDependency, RawModuleData } from "./pom";
 import * as util from "util";
 import { debug } from "util";
 
@@ -33,8 +33,10 @@ export function addDependenciesCommand ( context: CommandContext ) {
     .description ( "lists the dependencies for all modules" )
     .option ( "--debug" )
     .action ( async ( opts ) => {
-      const dir = context.command.optsWithGlobals ().directory ?? context.currentDirectory
-      const result = await findAllDependencies ( context.fileOps, dir, opts.debug );
+      const { command, fileOps, currentDirectory } = context
+      const dir = command.optsWithGlobals ().directory ?? currentDirectory
+      const moduleData: RawModuleData = await loadAndListModules ( fileOps, dir );
+      const result = await findAllDependencies ( fileOps, moduleData, dir, opts.debug );
       console.log ( util.inspect ( result, false, null ) )
     } )
 }

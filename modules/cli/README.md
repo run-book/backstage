@@ -33,10 +33,12 @@ The third controls the type. It should probably be `library` or `service`  but o
 A pom already contains a lot of information about a project. We can use this information to
 make a catalog-info.yaml file for backstage.
 
-For example the description, the dependencies... etc
+For example the description, the dependencies the scm... etc
 
-Currently the git repo is scanned for the scm info, rather than the pom. This is likely to change and become
-a change of responsibility
+Currently only 'immediate' dependencies are added. That is dependencies between the modules in the pom.xml file.
+
+
+
 
 
 # installation 
