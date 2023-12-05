@@ -14,8 +14,13 @@ export interface RawModuleData {
   scm: string
   properties: NameAnd<string>
 }
+
+export type SourceType = 'maven' | 'npm'
+
 export interface ModuleDependency {
+  sourceType: SourceType
   module: string
+  scm: string
   ignore: boolean
   fullname: string
   groupId: string
@@ -25,6 +30,11 @@ export interface ModuleDependency {
   kind: string
   properties: NameAnd<string>
   deps: Artifact[]
+}
+
+export type ModDependenciesAndName = {
+  modData: ModuleDependency[]
+  name?: string
 }
 export const isLocal = ( moduleData: RawModuleData, debug: boolean ) => ( artifact: Artifact ): boolean => {
   if ( debug ) console.log ( `isLocal`, artifact )

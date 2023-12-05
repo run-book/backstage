@@ -1,10 +1,11 @@
 import { CommandContext } from "./context";
 import { applyCatalogTemplateForKind, applyRootCatalogTemplate, catalogTemplateDic, rootCatalogTemplateDictionary, templateDir } from "./templates";
 import { Command } from "commander";
-import { findAllChildPomDependencies, loadAndListPomModules, mavenTemplate } from "./pom";
+import { findAllChildPomDependencies, findModuleDepenciesAndNameFromPom, loadAndListPomModules } from "./pom";
 import { FileAndKind, listFilesRecursively, makeRelative, searchDirectoryForBackstageFiles } from "./file.search";
-import { ModuleDependency, RawModuleData } from "./module";
+import { ModDependenciesAndName, ModuleDependency, RawModuleData } from "./module";
 import { FileOps } from "@laoban/fileops";
+import { findModuleDependenciesAndNameFromPom } from "./npm";
 
 
 export function addFindCommand ( context: CommandContext ) {
@@ -35,9 +36,16 @@ export function addNukeCommand ( context: CommandContext ) {
           await fileOps.removeFile ( f )
         } else if ( opts.debug ) console.log ( 'not deleting', f )
       } )
-
-
     } )
+}
+
+
+async function findModuleDependenciesAndName ( fileOps: FileOps, dir, opts, debug ) {
+  const fromPom: ModDependenciesAndName | undefined = await findModuleDepenciesAndNameFromPom ( fileOps, dir, opts, debug );
+  if ( fromPom !== undefined ) return fromPom
+  const fromNpn = await findModuleDependenciesAndNameFromPom ( fileOps, dir, opts, debug );
+  if ( fromNpn !== undefined ) return fromNpn
+  throw new Error ( `Searching directory ${dir}. Unable to find pom.xml at that location or any package.json under it` )
 }
 export function addMakeCatalogCommand ( context: CommandContext ) {
   context.command.command ( "make" )
@@ -54,19 +62,17 @@ export function addMakeCatalogCommand ( context: CommandContext ) {
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       let dirs: FileAndKind[] = await searchDirectoryForBackstageFiles ( fileOps, dir );
       const relativeDirs = dirs.map ( f => f.file ).map ( makeRelative ( fileOps, dir ) )
-
-      const moduleData: RawModuleData = await loadAndListPomModules ( fileOps, dir );
-
-      const name = opts.name ?? `Mono repo at ${moduleData.scm ?? 'unknown scm'}`
-      const modData: ModuleDependency[] = await findAllChildPomDependencies ( fileOps, moduleData, dir, debug );
-      const rootCatalogDic = rootCatalogTemplateDictionary ( name, modData, relativeDirs )
+      const { name, modData } = await findModuleDependenciesAndName ( fileOps, dir, opts, debug );
+      const realName = opts.name ?? name
+      if ( realName === undefined ) throw new Error ( `Unable to find a name for the root component. Use --name` )
+      const rootCatalogDic = rootCatalogTemplateDictionary ( realName, modData, relativeDirs )
       const rootCatalog = await applyRootCatalogTemplate ( fileOps, template, rootCatalogDic )
 
 
       await Promise.all ( modData.map ( async md => {
-        const catalogDic = catalogTemplateDic ( owner, moduleData, md, lifecycle )
+        const catalogDic = catalogTemplateDic ( owner, md, lifecycle )
 
-        let catalog = await applyCatalogTemplateForKind ( fileOps, mavenTemplate(template), md.kind, catalogDic )
+        let catalog = await applyCatalogTemplateForKind ( fileOps, template, md.sourceType, md.kind, catalogDic )
         if ( debug ) catalog = catalog + "\n#DEBUG\n" + JSON.stringify ( catalogDic, undefined, 2 ) + "\n#DEBUG\n" + JSON.stringify ( md, undefined, 2 )
         const filename = fileOps.join ( dir, md.module, `catalog-info.yaml` )
         if ( dryrun ) {

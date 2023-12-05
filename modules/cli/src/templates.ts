@@ -1,4 +1,4 @@
-import { ModuleDependency, RawModuleData } from "./module";
+import { ModuleDependency, RawModuleData, SourceType } from "./module";
 import { FileOps } from "@laoban/fileops";
 import { derefence } from "@laoban/variables";
 import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
@@ -8,7 +8,7 @@ export interface RootCatalogTemplateDir {
   targets: string
 }
 export function rootCatalogTemplateDictionary ( name: string, mds: ModuleDependency[], otherLocations: string[] ): RootCatalogTemplateDir {
-  const fromPom = mds.map ( md => `   -  ./${md.module}/catalog-info.yaml` );
+  const fromPom = mds.filter ( md => md.ignore !== true ).map ( md => `   -  ./${md.module}/catalog-info.yaml` );
   const fromOther = otherLocations.map ( loc => `   -  ${loc}` )
   const targets = fromPom.concat ( fromOther ).join ( '\n' )
   return { name, targets }
@@ -20,7 +20,7 @@ export async function applyRootCatalogTemplate ( fileOps: FileOps, dir: string, 
 }
 
 // export const templateDir: string = 'src/template'
-export const templateDir: string = 'https://raw.githubusercontent.com/run-book/backstage/master/modules/cli/src/template'
+export const templateDir: string = 'https://raw.githubusercontent.com/run-book/backstage/master/template'
 
 export interface CatalogTemplateDictionary {
   fullname: string
@@ -33,7 +33,7 @@ export interface CatalogTemplateDictionary {
   lifecycle: string
   dependsOn: string
 }
-export function catalogTemplateDic ( owner: string, modData: RawModuleData, md: ModuleDependency, lifecycle: string ): CatalogTemplateDictionary {
+export function catalogTemplateDic ( owner: string, md: ModuleDependency, lifecycle: string ): CatalogTemplateDictionary {
   const dependsOn = md.deps.length === 0 ? '' : 'dependsOn: \n' +
     md.deps.map ( a => `   -  component:${a.fullname}` ).join ( '\n' )
   return {
@@ -42,7 +42,7 @@ export function catalogTemplateDic ( owner: string, modData: RawModuleData, md: 
     groupId: md.groupId,
     artifactId: md.artifactId,
     description: md.description ?? "Not provided in the POM",
-    repository: modData.scm,
+    repository: md.scm,
     lifecycle,
     owner,
     kind: md.kind,
@@ -51,14 +51,14 @@ export function catalogTemplateDic ( owner: string, modData: RawModuleData, md: 
 }
 
 
-async function loadTemplateForKind ( fileOps: FileOps, dir: string, kind: string ) {
+async function loadTemplateForKind ( fileOps: FileOps, dir: string, sourceType: SourceType, kind: string ) {
   try {
-    return await fileOps.loadFileOrUrl ( `${dir}/${kind}.template.yaml` );
+    return await fileOps.loadFileOrUrl ( `${dir}/${sourceType}/${kind}.template.yaml` );
   } catch ( err ) {
-    return await fileOps.loadFileOrUrl ( `${dir}/default.template.yaml` );
+    return await fileOps.loadFileOrUrl ( `${dir}/${sourceType}/default.template.yaml` );
   }
 }
-export async function applyCatalogTemplateForKind ( fileOps: FileOps, dir: string, kind: string, dic: CatalogTemplateDictionary ): Promise<string> {
-  const template = await loadTemplateForKind ( fileOps, dir, kind )
+export async function applyCatalogTemplateForKind ( fileOps: FileOps, dir: string, sourceType: SourceType, kind: string, dic: CatalogTemplateDictionary ): Promise<string> {
+  const template = await loadTemplateForKind ( fileOps, dir, sourceType, kind )
   return derefence ( `Making template for ${dic.groupId}.${dic.artifactId}`, dic, template, { variableDefn: doubleXmlVariableDefn } )
 }

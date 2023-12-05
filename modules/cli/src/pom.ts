@@ -2,10 +2,8 @@ import { FileOps } from "@laoban/fileops";
 import path from "path";
 import { parseStringPromise } from "xml2js";
 import { NameAnd } from "@laoban/utils";
-import { Artifact, isLocal, ModuleDependency, RawModuleData } from "./module";
-import { templateDir } from "./templates";
+import { Artifact, isLocal, ModDependenciesAndName, ModuleDependency, RawModuleData } from "./module";
 
-export function mavenTemplate ( dir: string ): string {return dir + '/maven'}
 
 const filterBackspaceKeys = ( jsonObj: NameAnd<string> ): NameAnd<string> => {
   const result: NameAnd<string> = {};
@@ -41,11 +39,21 @@ export function extractPomModules ( pom: any ): string[] {
   return modules ?? []
 }
 
-export async function loadAndParsePom ( fileOps: FileOps, dir: string ) {
-  return await parseStringPromise ( await loadPom ( fileOps, dir ), { explicitArray: false } );
+async function locaPom ( fileOps: FileOps, dir: string ) {
+  try {
+    return await loadPom ( fileOps, dir );
+  } catch ( e ) {
+    return undefined
+  }
 }
-export async function loadAndListPomModules ( fileOps: FileOps, dir: string | undefined ): Promise<RawModuleData> {
+export async function loadAndParsePom ( fileOps: FileOps, dir: string ): Promise<any | undefined> {
+  const pomString = await locaPom ( fileOps, dir );
+  if ( pomString === undefined ) return undefined
+  return await parseStringPromise ( pomString, { explicitArray: false } );
+}
+export async function loadAndListPomModules ( fileOps: FileOps, dir: string | undefined ): Promise<RawModuleData | undefined> {
   const pom = await loadAndParsePom ( fileOps, dir );
+  if ( pom === undefined ) return undefined
   const modules = extractPomModules ( pom )
   const groupId = pom?.project?.groupId
   const version = pom?.project?.version
@@ -54,6 +62,26 @@ export async function loadAndListPomModules ( fileOps: FileOps, dir: string | un
   const properties = filterBackspaceKeys ( pom.project?.properties ?? {} )
   return { modules, groupId, version, description, scm, properties }
 }
+function extractPomDependency ( debug: boolean, module: string, moduleData: RawModuleData, modulePom: any ): ModuleDependency {
+  const groupId = modulePom.project.groupId ?? moduleData.groupId
+  const allDeps = extractPomDependencies ( modulePom, debug );
+  if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
+  const description = modulePom.project.description
+  const properties = filterBackspaceKeys ( modulePom.project?.properties ?? {} )
+  const kind = properties?.kind ?? "Component"
+  const ignore = properties?.ignore === 'true' ?? false
+  const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
+  const fullname = `${groupId}.${module}`
+  const version = modulePom.project.version
+  const scm = modulePom.project.scm?.url ?? modulePom.project.scm?.connection ?? moduleData.scm
+  return {
+    sourceType: 'maven',
+    scm,
+    module, groupId,
+    artifactId: module,
+    fullname, deps, description, kind, properties, ignore, version
+  }
+}
 export async function findAllChildPomDependencies ( fileOps: FileOps, moduleData: RawModuleData, dir: string, debug: boolean ): Promise<ModuleDependency[]> {
   const { groupId, modules } = moduleData;
   if ( debug ) console.log ( `groupId ${groupId} modules ${modules}` )
@@ -61,17 +89,16 @@ export async function findAllChildPomDependencies ( fileOps: FileOps, moduleData
     const moduleDir = path.resolve ( fileOps.join ( dir, module ) )
     if ( debug ) console.log ( `moduleDir ${moduleDir}` )
     const modulePom = await loadAndParsePom ( fileOps, moduleDir )
-    const allDeps = extractPomDependencies ( modulePom, debug );
-    if ( debug ) console.log ( `   allDeps for ${module}`, allDeps )
-    const description = modulePom.project.description
-    const properties = filterBackspaceKeys ( modulePom.project?.properties ?? {} )
-    const kind = properties?.kind ?? "Component"
-    const ignore = properties?.ignore === 'true' ?? false
-    const deps = allDeps.filter ( isLocal ( moduleData, debug ) )
-    const fullname = `${groupId}.${module}`
-    const version = modulePom.project.version
-    return { module, groupId, artifactId: module, fullname, deps, description, kind, properties, ignore, version }
+    return extractPomDependency ( debug, module, moduleData, modulePom );
   } ) )
   const result = mods.filter ( m => !m.ignore )
   return result;
+}
+
+export async function findModuleDepenciesAndNameFromPom ( fileOps: FileOps, dir: string, opts: any, debug: boolean | undefined ): Promise<ModDependenciesAndName | undefined> {
+  const moduleData = await loadAndListPomModules ( fileOps, dir );
+  if ( moduleData === undefined ) return undefined
+  const name = opts.name ?? `Mono repo at ${moduleData.scm ?? 'unknown scm'}`
+  const modData: ModuleDependency[] = await findAllChildPomDependencies ( fileOps, moduleData, dir, debug );
+  return { name, modData };
 }

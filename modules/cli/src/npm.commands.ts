@@ -1,8 +1,6 @@
 import { CommandContext } from "./context";
 import { Command } from "commander";
-import { parseJson } from "@laoban/fileops";
-import { listFilesRecursively, makeRelative } from "./file.search";
-import { listNpmFiles, listNpmFilesAsModules, withJustLocalDeps } from "./npm";
+import { listNpmFilesAsModules, withJustLocalDeps } from "./npm";
 
 
 export function addListNpmCommand ( context: CommandContext ) {
@@ -15,7 +13,8 @@ export function addListNpmCommand ( context: CommandContext ) {
       const longestModule = modules.reduce ( ( acc, md ) => Math.max ( acc, md.module.length ), 0 )
       const longestName = modules.reduce ( ( acc, md ) => Math.max ( acc, md.fullname?.length ?? 0 ), 0 )
       for ( const md of withJustLocalDeps(modules) ) {
-        process.stdout.write( `${md.module.padEnd ( longestModule )} ${md.fullname?.padEnd ( longestName )} ${md.version} ${md.deps.map ( md => md.fullname )}\n` )
+        const ignore = md.ignore ? 'ignore' : '      '
+        process.stdout.write( `${md.module.padEnd ( longestModule )} ${md.fullname?.padEnd ( longestName )} ${md.version}  ${ignore} ${md.deps.map ( md => md.fullname )}\n` )
       }
     } )
 }
