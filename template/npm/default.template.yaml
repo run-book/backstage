@@ -8,9 +8,7 @@ metadata:
     - java
     - maven
   annotations:
-    backstage.io/source-location: <<repository>>
-    backstage.io/maven-group-id: <<groupId>>
-    backstage.io/maven-artifact-id: <<artifactId>>
+    backstage.io/source-location: <<scm>>
 spec:
   type: <<spec.type|default(library)>>
   owner: <<owner>>

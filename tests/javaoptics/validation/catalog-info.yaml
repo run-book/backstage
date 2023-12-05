@@ -3,7 +3,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: one.xingyi.validation
-  description: Not provided in the POM
+  description: "..."
   tags:
     - java
     - maven

@@ -3,12 +3,12 @@ apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: one.xingyi.optics
-  description: Not provided in the POM
+  description: "..."
   tags:
     - java
     - maven
   annotations:
-    backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
+    backstage.io/source-location: //LAOBAN-UPDATE-ERROR Creating javaoptics/optics/catalog-info.yaml for javaoptics/optics/pom.xml. <<repository>> is undefined
     backstage.io/maven-group-id: one.xingyi
     backstage.io/maven-artifact-id: optics
 spec:

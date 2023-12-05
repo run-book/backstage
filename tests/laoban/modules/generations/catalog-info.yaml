@@ -9,13 +9,10 @@ metadata:
     - maven
   annotations:
     backstage.io/source-location: Unknown scm
-    backstage.io/maven-group-id: @laoban
-    backstage.io/maven-artifact-id: generations
 spec:
   type: library
-  owner: Not Known
+  owner: phil-rice
   lifecycle: experimental
   dependsOn: 
-   -  component:array.prototype.flatmap
    -  component:@laoban/debug
    -  component:@laoban/utils

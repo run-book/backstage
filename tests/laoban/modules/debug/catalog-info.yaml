@@ -9,10 +9,8 @@ metadata:
     - maven
   annotations:
     backstage.io/source-location: Unknown scm
-    backstage.io/maven-group-id: @laoban
-    backstage.io/maven-artifact-id: debug
 spec:
   type: library
-  owner: Not Known
+  owner: phil-rice
   lifecycle: experimental
   

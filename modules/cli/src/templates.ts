@@ -2,13 +2,14 @@ import { ModuleDependency, RawModuleData, SourceType } from "./module";
 import { FileOps } from "@laoban/fileops";
 import { derefence } from "@laoban/variables";
 import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
+import { ErrorsAnd } from "@laoban/utils";
 
 export interface RootCatalogTemplateDir {
   name: string
   targets: string
 }
 export function rootCatalogTemplateDictionary ( name: string, mds: ModuleDependency[], otherLocations: string[] ): RootCatalogTemplateDir {
-  const fromPom = mds.filter ( md => md.ignore !== true ).map ( md => `   -  ./${md.module}/catalog-info.yaml` );
+  const fromPom = mds.filter ( md => md.ignore !== true ).map ( md => `   -  ./${md.pathOffset}/catalog-info.yaml` );
   const fromOther = otherLocations.map ( loc => `   -  ${loc}` )
   const targets = fromPom.concat ( fromOther ).join ( '\n' )
   return { name, targets }
@@ -58,7 +59,11 @@ async function loadTemplateForKind ( fileOps: FileOps, dir: string, sourceType: 
     return await fileOps.loadFileOrUrl ( `${dir}/${sourceType}/default.template.yaml` );
   }
 }
-export async function applyCatalogTemplateForKind ( fileOps: FileOps, dir: string, sourceType: SourceType, kind: string, dic: CatalogTemplateDictionary ): Promise<string> {
-  const template = await loadTemplateForKind ( fileOps, dir, sourceType, kind )
-  return derefence ( `Making template for ${dic.groupId}.${dic.artifactId}`, dic, template, { variableDefn: doubleXmlVariableDefn } )
+export async function applyCatalogTemplateForKind ( fileOps: FileOps, dir: string, md: ModuleDependency, dic: any ): Promise<ErrorsAnd<string>> {
+  const template = await loadTemplateForKind ( fileOps, dir, md.sourceType, md.kind )
+  try {
+    return derefence ( `Creating ${md.catalogName} for ${md.pathOffset}`, dic, template, { throwError: true, variableDefn: doubleXmlVariableDefn } )
+  } catch ( err ) {
+    return [ err.message ]
+  }
 }

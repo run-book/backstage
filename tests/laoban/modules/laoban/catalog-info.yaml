@@ -9,15 +9,11 @@ metadata:
     - maven
   annotations:
     backstage.io/source-location: Unknown scm
-    backstage.io/maven-group-id: 
-    backstage.io/maven-artifact-id: laoban
 spec:
   type: library
-  owner: Not Known
+  owner: phil-rice
   lifecycle: experimental
   dependsOn: 
-   -  component:fs-extra
-   -  component:commander
    -  component:@laoban/generations
    -  component:@laoban/cli
    -  component:@laoban/comparefiles
