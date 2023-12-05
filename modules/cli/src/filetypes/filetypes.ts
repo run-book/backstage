@@ -1,9 +1,10 @@
-import { CatalogData, isCatalogData, isModuleDependency, ModuleData, ModuleDependency, SourceType } from "../module";
+import { CatalogData, isCatalogData, isModuleDependency, ModuleData, moduleDataPath, ModuleDependency, SourceType } from "../module";
 import { ErrorsAnd, hasErrors, NameAnd } from "@laoban/utils";
 import { FileOps } from "@laoban/fileops";
 import { applyCatalogTemplateForKind } from "../templates";
 import { listFilesRecursively } from "../file.search";
 import path from "path";
+import { makeTreeFromPathFnAndArray, Tree } from "../tree";
 
 
 export type FileType = {
@@ -14,7 +15,7 @@ export type FileType = {
   //Give a file and the parsed content what is the kind.
   load: ( fileOps: FileOps, pathOffset: string, filename: string, debug?: boolean ) => Promise<ModuleData>
   //Given a module this will find the parents and place into an array with the md at the end
-  makeArray: ( pathToMd: NameAnd<ModuleData>, entityToMd: NameAnd<ModuleData> ) => ( md: ModuleData ) => ModuleData[]
+  makeArray: ( trees: NameAnd<Tree<ModuleDependency>>, entityToMd: NameAnd<ModuleData> ) => ( md: ModuleData ) => ModuleData[]
   makeCatalog: ( fileOps: FileOps, defaults: any, templateDir: string, array: ModuleData[] ) => Promise<ErrorsAnd<CatalogData>>
 }
 
@@ -83,7 +84,7 @@ export async function loadFiles ( fileOps: FileOps, dir: string, fts: FileAndFil
 
 export type FileResults = {
   mds: ModuleData[]
-  pathToMd: NameAnd<ModuleData>,
+  trees: NameAnd<Tree<ModuleDependency>>,
   entityToMd: NameAnd<ModuleData>
 }
 export function mdsToFileResults ( moduleData: ModuleData[] ): FileResults {
@@ -93,14 +94,14 @@ export function mdsToFileResults ( moduleData: ModuleData[] ): FileResults {
     if ( isCatalogData ( md ) ) return md
     return ({ ...md, deps: md.deps.filter ( d => localEntities.includes ( d.fullname ) ) });
   } )
-  const pathToMd: NameAnd<ModuleData> = {}
   const entityToMd: NameAnd<ModuleData> = {}
   for ( const md of mds ) {
     if ( hasErrors ( md ) ) continue
-    pathToMd[ md.pathOffset ] = md
     if ( isModuleDependency ( md ) ) entityToMd[ md.fullname ] = md
   }
-  return { mds, pathToMd, entityToMd }
+  const justModuleDependencies: ModuleDependency[] = mds.filter ( isModuleDependency ) as ModuleDependency[]
+  const trees = makeTreeFromPathFnAndArray<ModuleDependency> ( moduleDataPath, justModuleDependencies )
+  return { mds, trees, entityToMd }
 }
 
 
@@ -129,7 +130,7 @@ export async function processOne ( fileOps: FileOps, defaults: any, templateDir:
   if ( isCatalogData ( md ) ) return md
   const ft = fileTypeFromMd ( fts, md );
   if ( !ft ) throw new Error ( `Unknown file type: ${md.sourceType}` )
-  const array = ft.makeArray ( fileResults.pathToMd, fileResults.entityToMd ) ( md );
+  const array = ft.makeArray ( fileResults.trees, fileResults.entityToMd ) ( md );
   return ft.makeCatalog ( fileOps, defaults, templateDir, array );
 }
 export async function processFileResults ( fileOps: FileOps, defaults: any, templateDir: string, fts: FileType[], fileResults: FileResults ): Promise<ErrorsAnd<CatalogData>[]> {

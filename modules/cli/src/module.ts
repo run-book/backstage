@@ -1,4 +1,5 @@
 import { ErrorsAnd, hasErrors, NameAnd } from "@laoban/utils";
+import path from "path";
 
 export interface Artifact {
   groupId: string
@@ -49,11 +50,23 @@ export interface ModuleDependency extends Artifact {
   deps: Artifact[]
 }
 export type ModuleData = ErrorsAnd<ModuleDependency | CatalogData>
+
+export function debugStringForMd ( md: ModuleData ): string {
+  if ( hasErrors ( md ) ) return `Errors: ${md.join ( '\n' )}`
+  if ( isCatalogData ( md ) ) return `CatalogData: ${md.pathOffset}`
+  if ( isModuleDependency ( md ) )  return `ModuleData: ${md.pathOffset}`
+  return `Unknown: ${md}`
+}
+export function moduleDataPath ( md: ModuleData ): string|undefined {
+  if ( hasErrors ( md ) ) return undefined
+  return path.dirname(md.pathOffset)
+}
+
 export function isCatalogData ( md: ModuleData ): md is CatalogData {
   return (md as CatalogData).catalogData !== undefined
 }
 export function isModuleDependency ( md: ModuleData ): md is ModuleDependency {
-  return (md as CatalogData).catalogData === undefined
+  return (md as CatalogData)?.catalogData === undefined
 }
 export type ModDependenciesAndName = {
   modData: ModuleDependency[]

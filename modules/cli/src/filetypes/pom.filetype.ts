@@ -3,7 +3,8 @@ import { ErrorsAnd, hasErrors, NameAnd } from "@laoban/utils";
 import path from "path";
 import { parseStringPromise } from "xml2js";
 import { defaultMakeCatalog, FileType } from "./filetypes";
-import { Artifact, ModuleDependency } from "../module";
+import { Artifact, ModuleData, ModuleDependency } from "../module";
+import { Tree } from "../tree";
 
 
 export function makeArtifact ( path: string, fragment: any, defArtifact?: Artifact ): ErrorsAnd<Artifact | undefined> {
@@ -41,7 +42,7 @@ export function simplePomModuleDependency ( pathOffset: string, pom: any, debug:
   const project = pom.project
   if ( project === undefined ) return [ `The file ${pathOffset} does not have a project element` ]
   const parent = makeArtifact ( `${pathOffset}/parent`, project.parent )
-  if (debug) console.log ( `parent`, pathOffset, parent, project.parent )
+  if ( debug ) console.log ( `parent`, pathOffset, parent, project.parent )
   if ( hasErrors ( parent ) ) return parent
   const artifact = makeArtifact ( pathOffset, project, parent )
   const deps = extractPomDependencies ( pom, debug );
@@ -70,12 +71,12 @@ export async function loadAndParsePom ( fileOps: any, pathOffset: string, file: 
   return md
 }
 
-export function makePomArray ( pathToMd: NameAnd<ModuleDependency>, entityToMd: NameAnd<ModuleDependency> ): ( md: ModuleDependency ) => ModuleDependency[] {
+export function makePomArray ( trees: NameAnd<Tree<ModuleData>>, entityToMd: NameAnd<ModuleDependency> ): ( md: ModuleDependency ) => ModuleDependency[] {
   return ( md: ModuleDependency ) => {
     const parent = entityToMd[ md.parent?.fullname ?? '' ]
     // console.log(`makePomArray`, md.pathOffset, 'parent',md.parent,  parent);
     if ( parent === undefined ) return [ md ]
-    return [ ...makePomArray ( pathToMd, entityToMd ) ( parent ), md ]
+    return [ ...makePomArray ( trees, entityToMd ) ( parent ), md ]
   }
 }
 export const pomFiletype: FileType = {

@@ -12,6 +12,6 @@ export const backstageYamlTC: FileType = {
     const value = await fileOps.loadFileOrUrl ( filename );
     return { catalogData: true, sourceType: 'backstageyaml', catalogName: pathOffset, pathOffset, value, ignore: false }
   },
-  makeArray: ( pathToMd: NameAnd<ModuleData>, entityToMd: NameAnd<ModuleData> ) => ( md: ModuleData ) => [ md ],
+  makeArray: ( trees, entityToMd: NameAnd<ModuleData> ) => ( md: ModuleData ) => [ md ],
   makeCatalog: defaultMakeCatalog
 }

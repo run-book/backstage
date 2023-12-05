@@ -2,9 +2,10 @@ import { CommandContext } from "./context";
 import { Command } from "commander";
 import { FileType, fileTypeFromMd, filterFileTypes, findFilesAndFileType, loadFiles, makeDictionary, mdsToFileResults } from "./filetypes/filetypes";
 import { hasErrors } from "@laoban/utils";
-import { displayErrors, isCatalogData, isModuleDependency, ModuleData } from "./module";
+import { debugStringForMd, displayErrors, isCatalogData, isModuleDependency, ModuleData } from "./module";
 import { FileOps } from "@laoban/fileops";
 import { loadFilesAndFilesTypesForDisplay } from "./commands";
+import { treeToString } from "./tree";
 
 
 export function addDataCommand ( context: CommandContext ) {
@@ -45,12 +46,12 @@ export function addArraysCommand ( context: CommandContext ) {
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts, maxFileLength, maxSourceType } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
       const loaded = await loadFiles ( fileOps, dir, ffts, debug )
-      const { pathToMd, entityToMd } = mdsToFileResults ( loaded )
+      const { trees, entityToMd } = mdsToFileResults ( loaded )
       loaded.forEach ( md => {
         if ( hasErrors ( md ) ) return
         if ( md.ignore && !all ) return
         const ft = fileTypeFromMd ( fts, md );
-        const makeArray = ft.makeArray ( pathToMd, entityToMd );
+        const makeArray = ft.makeArray ( trees, entityToMd );
         const array = makeArray ( md )
         const arrayString = array.map ( md => hasErrors ( md ) ? '' : md.pathOffset.padEnd ( maxFileLength ) ).join ( ' ' )
         process.stdout.write ( `${md.pathOffset.padEnd ( maxFileLength )} ${md.sourceType.padEnd ( maxSourceType )} [${array.length}]  ${arrayString}\n` )
@@ -58,6 +59,32 @@ export function addArraysCommand ( context: CommandContext ) {
       displayErrors ( loaded );
     } )
 }
+export function addTreesComments ( context: CommandContext ) {
+  context.command.command ( "trees" )
+    .description ( "Shows the trees based just on the path" )
+    .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
+    .option ( '-d, --debug', 'output extra debugging' )
+    .option ( 'a|--all', 'include ignored files' )
+    .option ( '-o|--owner <owner>', 'owner of the component' )
+    .option ( '-l|--lifecycle  <lifecycle >', 'owner of the component, "experimental' )
+    .action ( async ( opts ) => {
+      const { fileTypes, debug, all, owner, lifecycle } = opts
+      const fts = filterFileTypes ( context.fileTypes, fileTypes )
+      if ( debug ) console.log ( 'fileTypes', fts.map ( ft => ft.sourceType ) )
+      const { command, fileOps, currentDirectory } = context
+      const dir = command.optsWithGlobals ().directory ?? currentDirectory
+      const { ffts, maxFileLength, maxSourceType } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
+      const loaded = await loadFiles ( fileOps, dir, ffts, debug )
+      const { trees, entityToMd } = mdsToFileResults ( loaded )
+      const roots = Object.values ( trees ).filter ( t => t.parent === undefined )
+      for ( const root of roots ) {
+        const treeString = treeToString ( root, debugStringForMd, 0 )
+        process.stdout.write ( `${treeString}\n` )
+      }
+      displayErrors ( loaded );
+    } )
+}
+
 export function addTemplateVarsCommand ( context: CommandContext ) {
   context.command.command ( "template-debug" )
     .description ( "debugging" )
@@ -74,12 +101,12 @@ export function addTemplateVarsCommand ( context: CommandContext ) {
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts, maxFileLength, maxSourceType } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
       const loaded = await loadFiles ( fileOps, dir, ffts, debug )
-      const { pathToMd, entityToMd } = mdsToFileResults ( loaded )
+      const { trees, entityToMd } = mdsToFileResults ( loaded )
       loaded.forEach ( md => {
         if ( hasErrors ( md ) ) return
         if ( md.ignore && !all ) return
         const ft = fileTypeFromMd ( fts, md );
-        const makeArray = ft.makeArray ( pathToMd, entityToMd );
+        const makeArray = ft.makeArray ( trees, entityToMd );
         const array = makeArray ( md )
         const dic = makeDictionary ( { owner, lifecycle }, array )
         process.stdout.write ( `${md.pathOffset.padEnd ( maxFileLength )} ${md.sourceType.padEnd ( maxSourceType )} ${JSON.stringify ( dic )}\n` )
@@ -139,6 +166,7 @@ export function addDebugCommands ( context: CommandContext ) {
   const newContext: CommandContext = { ...context, command }
   addRawCommand ( newContext );
   addArraysCommand ( newContext );
+  addTreesComments ( newContext );
   addDataCommand ( newContext );
   addTemplateVarsCommand ( newContext );
   addListCommand ( newContext );
