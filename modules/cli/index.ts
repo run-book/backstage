@@ -6,6 +6,7 @@ import { addPomCommands } from "./src/pom.commands";
 import { FileOps } from "@laoban/fileops";
 import { CommandContext } from "./src/context";
 import { addCatalogCommands } from "./src/catalog.commands";
+import { addNpmCommands } from "./src/npm.commands";
 
 const fetch = require ( 'node-fetch' );
 
@@ -29,6 +30,7 @@ const program: Command = require ( 'commander' )
 const fileOps: FileOps = fileOpsNode ()
 const context: CommandContext = { command: program, fileOps, currentDirectory: process.cwd () }
 addPomCommands ( context )
+addNpmCommands(context)
 addCatalogCommands ( context )
 program.command ( "debug" ).description ( "just lists the flags you selected" ).action ( () => {
   console.log ( program.optsWithGlobals () )

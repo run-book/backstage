@@ -21,6 +21,9 @@ Sometimes a module will define multiple things:
 It might be possible to tweak the pom.xml to define multiple things. But this would be messy and not clear.
 So we can use the pom.xml to define the main thing. And then use a backstage.xxx.yaml file to define the other things.
 
+# What do we do if we have package.json and pom.xml in the directory?
 
+For now...nothing. We'll do a chain of responsibility. So we'll look for a pom.xml first. If we don't find one we'll
+look for a package.json.
 
-
+We should really have a three way chain: pom for a single jar, pom with modules, package.json...but that's for later.

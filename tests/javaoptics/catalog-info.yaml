@@ -15,4 +15,4 @@ spec:
    -  ./processors/catalog-info.yaml
    -  ./optics/catalog-info.yaml
    -  ./validation/catalog-info.yaml
-   -  ./../../modules/cli/backstage.service.yaml
+   -  ./optics/backstage.service.yaml

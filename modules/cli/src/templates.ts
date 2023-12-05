@@ -21,6 +21,7 @@ export async function applyRootCatalogTemplate ( fileOps: FileOps, dir: string, 
 
 // export const templateDir: string = 'src/template'
 export const templateDir: string = 'https://raw.githubusercontent.com/run-book/backstage/master/modules/cli/src/template'
+
 export interface CatalogTemplateDictionary {
   fullname: string
   groupId: string

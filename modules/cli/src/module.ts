@@ -5,11 +5,6 @@ export interface Artifact {
   artifactId: string
   fullname: string
   version: string
-  packaging: string
-  classifier?: string
-  scope?: string
-  optional?: boolean
-  exclusions?: string[]
 }
 export interface RawModuleData {
   description: string
@@ -25,6 +20,7 @@ export interface ModuleDependency {
   fullname: string
   groupId: string
   artifactId: string
+  version?: string
   description: string
   kind: string
   properties: NameAnd<string>
