@@ -2,9 +2,9 @@
 apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
-  name: somename
+  name: location.somename
 spec:
   type: url
   targets:
-    - ./javaoptics/catalog.info.maven.yaml
-    - ./laoban/catalog.info.npm.yaml
+    - ./javaoptics/catalog-info-yaml
+    - ./laoban/catalog-info-yaml
