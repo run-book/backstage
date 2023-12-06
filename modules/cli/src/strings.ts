@@ -25,3 +25,20 @@ export function cleanString(input: string): string {
 
   return result;
 }
+export function escapeStringForYaml(str: string): string {
+  // For multiline strings, use block style
+  if (str.includes('\n')) {
+    return `|\n${str.split('\n').map(line => `  ${line}`).join('\n')}`;
+  }
+
+  // For single-line strings, check if we need to quote
+  // This regex checks for characters that might need the string to be quoted
+  if (/[:{}\[\],&*#?|<>=!%@`]/.test(str) || /^(true|false|null|\d+)$/.test(str)) {
+    // Escape double quotes inside the string
+    return `"${str.replace(/"/g, '\\"')}"`;
+  }
+
+  if (str.length === 0) return '""';
+  return str;
+}
+

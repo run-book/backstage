@@ -5,6 +5,7 @@ import { applyCatalogTemplateForKind } from "../templates";
 import { listFilesRecursively } from "../file.search";
 import path from "path";
 import { Policy } from "../policy";
+import { escapeStringForYaml } from "../strings";
 
 export interface CommonFileType {
   sourceType: SourceType
@@ -42,7 +43,7 @@ function makeDictionaryPart ( existing: any, md: ModuleDependency ) {
     fullname: `${md.fullname}`,
     groupId: md.groupId ?? existing.groupId,
     artifactId: md.artifactId, // Note we DON't want to default artifact Id... we want an error
-    description: md.description ?? '"..."', // Note we DON'T want to default description to the parent
+    description: escapeStringForYaml( md.description ?? '...'), // Note we DON'T want to default description to the parent
     scm: md.scm ?? existing.scm,
     kind: md.kind ?? existing.kind,
     dependsOn,

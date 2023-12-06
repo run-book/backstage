@@ -23,33 +23,6 @@ export async function applyRootCatalogTemplate ( fileOps: FileOps, dir: string, 
 // export const templateDir: string = 'src/template'
 export const templateDir: string = 'https://raw.githubusercontent.com/run-book/backstage/master/template'
 
-export interface CatalogTemplateDictionary {
-  fullname: string
-  groupId: string
-  artifactId: string
-  description: string
-  kind: string
-  repository: string
-  owner: string
-  lifecycle: string
-  dependsOn: string
-}
-export function catalogTemplateDic ( owner: string, md: ModuleDependency, lifecycle: string ): CatalogTemplateDictionary {
-  const dependsOn = md.deps.length === 0 ? '' : 'dependsOn: \n' +
-    md.deps.map ( a => `   -  component:${a.fullname}` ).join ( '\n' )
-  return {
-    ...md.properties,
-    fullname: `${md.fullname}`,
-    groupId: md.groupId,
-    artifactId: md.artifactId,
-    description: md.description ?? "Not provided in the POM",
-    repository: md.scm,
-    lifecycle,
-    owner,
-    kind: md.kind,
-    dependsOn
-  }
-}
 
 
 async function loadTemplateForKind ( fileOps: FileOps, dir: string, sourceType: SourceType, kind: string ) {

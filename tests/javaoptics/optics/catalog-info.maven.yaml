@@ -3,7 +3,7 @@ apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: one.xingyi.optics
-  description: "..."
+  description: ...
   tags:
     - java
     - maven
