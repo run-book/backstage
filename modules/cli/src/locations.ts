@@ -34,7 +34,8 @@ function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultN
     if ( existingRootIndex !== -1 ) result.splice ( existingRootIndex, 1 )
     if ( defaultName === undefined ) result.push ( [ `No name for root` ] )
     else {
-      const newRoot = { path: './catalog-info.yaml', name: defaultName, children: roots.map ( root => prefixWithDotIfNeeded ( path.dirname(root.value.catalogName) + '/catalog-info-yaml' ) ) };
+      const newRoot = { path: './catalog-info.yaml', name: defaultName,
+        children: roots.map ( root => prefixWithDotIfNeeded ( path.dirname(root.value.catalogName) + '/catalog-info-yaml' ) ) };
       result.push ( newRoot )
     }
   }
