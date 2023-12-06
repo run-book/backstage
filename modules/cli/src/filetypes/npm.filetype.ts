@@ -7,10 +7,11 @@ import { defaultMakeCatalogFromArray, ModuleDependencyFileType } from "./filetyp
 import { Artifact, moduleDataPath, ModuleDependency } from "../module";
 import { makeTreeFromPathFnAndArray, Tree } from "../tree";
 import { catalogInfoFilename, Policy } from "../policy";
+import { cleanString } from "../strings";
 
 export function nameToArtifact ( fullname: string, version: string ): Artifact {
   const split = fullname?.split ( '/' )
-  const common = { fullname, version }
+  const common = { fullname: cleanString ( fullname ), version }
   return split?.length !== 2 ? { ...common, groupId: '', artifactId: fullname } : { ...common, groupId: split[ 0 ], artifactId: split[ 1 ] };
 }
 export function extractScm ( npm: any ) {
@@ -55,7 +56,7 @@ export async function loadNpm ( fileOps: FileOps, policy: Policy, pathOffset: st
 
 export function makeNpmArray ( trees: NameAnd<Tree<ModuleDependency>>, ): ( md: ModuleDependency ) => ModuleDependency[] {
   return ( md: ModuleDependency ) => {
-    const p = moduleDataPath(md)
+    const p = moduleDataPath ( md )
     const tree = trees[ p ]
     if ( tree === undefined ) throw new Error ( `The tree is not defined for ${p}` )
     const parent = tree.parent
