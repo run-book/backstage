@@ -2,7 +2,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: one.xingyi.sqlandparams
+  name: one.xingyi.processors
   description: "..."
   tags:
     - java
@@ -10,10 +10,10 @@ metadata:
   annotations:
     backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
     backstage.io/maven-group-id: one.xingyi
-    backstage.io/maven-artifact-id: sqlandparams
+    backstage.io/maven-artifact-id: processors
 spec:
-  type: library
-  owner: phil-rice
+  type: Service
+  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/processors/catalog.info.maven.yaml for javaoptics/processors/pom.xml. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
-   -  component:one.xingyi.fp
+   -  component:one.xingyi.rawprocessors

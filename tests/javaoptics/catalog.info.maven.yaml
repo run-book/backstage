@@ -2,18 +2,17 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: one.xingyi.helpers
-  description: "..."
+  name: one.xingyi.javaoptics
+  description: Tools for handling immutability in Java using optics
   tags:
     - java
     - maven
   annotations:
     backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
     backstage.io/maven-group-id: one.xingyi
-    backstage.io/maven-artifact-id: helpers
+    backstage.io/maven-artifact-id: javaoptics
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/catalog.info.maven.yaml for javaoptics/pom.xml. <<owner>> is undefined
   lifecycle: experimental
-  dependsOn: 
-   -  component:one.xingyi.interfaces
+  

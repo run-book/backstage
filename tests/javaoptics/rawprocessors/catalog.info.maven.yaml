@@ -2,7 +2,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: one.xingyi.validation
+  name: one.xingyi.rawprocessors
   description: "..."
   tags:
     - java
@@ -10,11 +10,10 @@ metadata:
   annotations:
     backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
     backstage.io/maven-group-id: one.xingyi
-    backstage.io/maven-artifact-id: validation
+    backstage.io/maven-artifact-id: rawprocessors
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/rawprocessors/catalog.info.maven.yaml for javaoptics/rawprocessors/pom.xml. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
-   -  component:one.xingyi.fp
-   -  component:one.xingyi.helpers
+   -  component:one.xingyi.interfaces

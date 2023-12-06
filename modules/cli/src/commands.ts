@@ -19,12 +19,12 @@ export function addMakeCommand ( context: CommandContext ) {
   context.command.command ( "make" )
     .description ( "Makes component files for backstage" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
-    .option ( 'p|--policy <policy>', 'policy url' )
+    .option ( 'p, --policy <policy>', 'policy url' )
     .option ( '-d, --debug', 'output extra debugging' )
     .option ( '-t, --template <template>', 'the root template directory. Only use if you know what you are doing', templateDir )
-    .option ( '-o|--owner <owner>', 'owner of the component' )
-    .option ( "-n|--name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed" )
-    .option ( '-l|--lifecycle  <lifecycle>', 'owner of the component', 'experimental' )
+    .option ( '-o, --owner <owner>', 'owner of the component' )
+    .option ( "-n, --name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed" )
+    .option ( '-l, --lifecycle  <lifecycle>', 'owner of the component', 'experimental' )
     .option ( '--dryrun', `Don't make the files, instead state what you would create` )
     .action ( async ( opts ) => {
       const { fileTypes, debug, dryrun, template, owner, lifecycle, policy, name } = opts
@@ -53,5 +53,4 @@ export function addMakeCommand ( context: CommandContext ) {
 }
 export function addCommands ( context: CommandContext ) {
   addMakeCommand ( context );
-
 }

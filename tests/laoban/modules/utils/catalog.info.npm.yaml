@@ -11,7 +11,7 @@ metadata:
     backstage.io/source-location: Unknown scm
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating laoban/modules/utils/catalog.info.npm.yaml for laoban/modules/utils/package.json. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
    -  component:@laoban/debug

@@ -2,8 +2,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: @laoban/variables
-  description: A library that can dereference variables in strings
+  name: @laoban/generations
+  description: A library that typologically sorts data into generations
   tags:
     - java
     - maven
@@ -11,7 +11,8 @@ metadata:
     backstage.io/source-location: Unknown scm
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating laoban/modules/generations/catalog.info.npm.yaml for laoban/modules/generations/package.json. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
+   -  component:@laoban/debug
    -  component:@laoban/utils

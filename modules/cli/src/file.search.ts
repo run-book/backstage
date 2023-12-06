@@ -21,6 +21,7 @@ export const listFilesRecursively = async ( fileOps: FileOps, dir: string, filte
   for ( const file of files ) {
     const filepath = fileOps.join ( dir, file );
     if ( await fileOps.isDirectory ( filepath ) ) {
+      if ( filepath.endsWith ( '.git' ) || filepath.endsWith ( 'node_modules' ) || filepath.endsWith ( 'target' ) ) continue;
       allFiles = allFiles.concat ( await listFilesRecursively ( fileOps, filepath, filterFn ) );
     } else if ( filterFn ( file ) ) {
       allFiles.push ( filepath );

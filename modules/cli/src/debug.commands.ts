@@ -1,21 +1,22 @@
 import { CommandContext } from "./context";
 import { Command } from "commander";
 import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary } from "./filetypes/filetypes";
-import { hasErrors } from "@laoban/utils";
+import { flatMapK, hasErrors } from "@laoban/utils";
 import { CatalogData, debugStringForMd, displayErrors, isCatalogData, isModuleDependency, ModuleData, moduleDataPath, ModuleDataWithoutErrors } from "./module";
 import { loadFilesAndFilesTypesForDisplay } from "./commands";
 import { makeTreeFromPathFnAndArray, treeToString } from "./tree";
 import { loadPolicy } from "./policy";
 import { loadTemplateAndMakeLocationFiles, makeLocationFiles } from "./locations";
 import { templateDir } from "./templates";
+import { listFilesRecursively } from "./file.search";
 
 
 export function addDataCommand ( context: CommandContext ) {
   context.command.command ( "data" )
     .description ( "debugging - all the module data from the file - does not include data in parent" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
-    .option ( 'a|--all', 'include ignored files' )
-    .option ( 'p|--policy <policy>', 'policy url' )
+    .option ( 'a, --all', 'include ignored files' )
+    .option ( 'p, --policy <policy>', 'policy url' )
     .option ( '-d, --debug', 'output extra debugging' )
     .action ( async ( opts ) => {
       const { fileTypes, debug, all, policy } = opts
@@ -68,10 +69,10 @@ export function addTreesCommands ( context: CommandContext ) {
     .description ( "Shows the trees based just on the path" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
-    .option ( 'a|--all', 'include ignored files' )
-    .option ( 'p|--policy <policy>', 'policy url' )
-    .option ( '-o|--owner <owner>', 'owner of the component' )
-    .option ( '-l|--lifecycle  <lifecycle >', 'owner of the component, "experimental' )
+    .option ( 'a, --all', 'include ignored files' )
+    .option ( 'p, --policy <policy>', 'policy url' )
+    .option ( '-o, --owner <owner>', 'owner of the component' )
+    .option ( '-l, --lifecycle  <lifecycle >', 'owner of the component, "experimental' )
     .action ( async ( opts ) => {
       const { fileTypes, debug, policy } = opts
       const fts = filterFileTypes ( context.fileTypes, fileTypes )
@@ -95,9 +96,9 @@ export function addTemplateVarsCommand ( context: CommandContext ) {
     .description ( "debugging - the variables available to templates" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
-    .option ( 'p|--policy <policy>', 'policy url' )
-    .option ( '-o|--owner <owner>', 'owner of the component' )
-    .option ( '-l|--lifecycle  <lifecycle >', 'owner of the component, "experimental' )
+    .option ( 'p, --policy <policy>', 'policy url' )
+    .option ( '-o, --owner <owner>', 'owner of the component' )
+    .option ( '-l, --lifecycle  <lifecycle >', 'owner of the component, "experimental' )
     .action ( async ( opts ) => {
       const { fileTypes, debug, policy, owner, lifecycle } = opts
       const fts = filterFileTypes ( context.fileTypes, fileTypes )
@@ -126,8 +127,8 @@ export function addFilesCommand ( context: CommandContext ) {
     .description ( "shows all the places files will be added" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
-    .option ( 'a|--all', 'include ignored files' )
-    .option ( 'p|--policy <policy>', 'policy url' )
+    .option ( 'a, --all', 'include ignored files' )
+    .option ( 'p, --policy <policy>', 'policy url' )
     .action ( async ( opts ) => {
       const { fileTypes, debug, policy, all } = opts
       const fts = filterFileTypes ( context.fileTypes, opts.fileTypes )
@@ -151,8 +152,8 @@ export function addListCommand ( context: CommandContext ) {
     .description ( "list all modules." )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
-    .option ( 'a|--all', 'include ignored files' )
-    .option ( 'p|--policy <policy>', 'policy url' )
+    .option ( 'a, --all', 'include ignored files' )
+    .option ( 'p, --policy <policy>', 'policy url' )
     .action ( async ( opts ) => {
       const { fileTypes, debug, all, policy } = opts
       const fts = filterFileTypes ( context.fileTypes, opts.fileTypes )
@@ -178,9 +179,25 @@ export function addListCommand ( context: CommandContext ) {
     } )
 }
 
-export function addNukeCommand(context: CommandContext){
-  context.command.command("nuke")
-
+export function addNukeCommand ( { fileOps, currentDirectory, command }: CommandContext ) {
+  command.command ( "nuke" )
+    .description ( "removes any .yaml files that start with # Autogenerated" )
+    .option ( "--dryrun", "don't actually remove the files" )
+    .action ( async ( opts ) => {
+      const { dryrun } = opts
+      const dir = command.optsWithGlobals ().directory ?? currentDirectory
+      const yamlFiles = await listFilesRecursively ( fileOps, dir, f => f.endsWith ( ".yaml" ) );
+      const toDelete = await flatMapK ( yamlFiles, async f => {
+        const content = await fileOps.loadFileOrUrl ( f );
+        console.log('checking', f)
+        if ( content.startsWith ( "# Autogenerated" ) ) return [ f ];
+        return [];
+      } );
+      for ( const f of toDelete ) {
+        console.log ( `Deleting ${f}` );
+        if ( !dryrun ) await fileOps.removeFile ( f );
+      }
+    } )
 }
 export function addLocationsCommand ( context: CommandContext ) {
   context.command.command ( "locations" )
@@ -188,8 +205,8 @@ export function addLocationsCommand ( context: CommandContext ) {
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
     .option ( "--content", "show the content of the location files" )
-    .option ( "-n|--name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed" )
-    .option ( 'p|--policy <policy>', 'policy url' )
+    .option ( "-n, --name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed" )
+    .option ( 'p, --policy <policy>', 'policy url' )
     .option ( '-t, --template <template>', 'the root template directory. Only use if you know what you are doing', templateDir )
     .action ( async ( opts ) => {
       const { fileTypes, debug, content, all, policy, template, name } = opts
@@ -207,7 +224,7 @@ export function addLocationsCommand ( context: CommandContext ) {
         if ( content )
           process.stdout.write ( `${root.value}\n\n` )
       }
-      displayErrors ( [...loaded,...roots]  );
+      displayErrors ( [ ...loaded, ...roots ] );
     } )
 }
 
@@ -221,4 +238,5 @@ export function addDebugCommands ( context: CommandContext ) {
   addTemplateVarsCommand ( newContext );
   addListCommand ( newContext );
   addLocationsCommand ( newContext );
+  addNukeCommand ( newContext );
 }

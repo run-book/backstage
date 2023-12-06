@@ -2,8 +2,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: @laoban/generations
-  description: A library that typologically sorts data into generations
+  name: @laoban/config
+  description: Laoban's configuration
   tags:
     - java
     - maven
@@ -11,8 +11,7 @@ metadata:
     backstage.io/source-location: Unknown scm
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating laoban/modules/config/catalog.info.npm.yaml for laoban/modules/config/package.json. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
-   -  component:@laoban/debug
    -  component:@laoban/utils

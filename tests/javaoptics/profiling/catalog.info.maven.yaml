@@ -13,7 +13,7 @@ metadata:
     backstage.io/maven-artifact-id: profiling
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/profiling/catalog.info.maven.yaml for javaoptics/profiling/pom.xml. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
    -  component:one.xingyi.interfaces

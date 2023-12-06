@@ -2,7 +2,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: one.xingyi.processors
+  name: one.xingyi.helpers
   description: "..."
   tags:
     - java
@@ -10,10 +10,10 @@ metadata:
   annotations:
     backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
     backstage.io/maven-group-id: one.xingyi
-    backstage.io/maven-artifact-id: processors
+    backstage.io/maven-artifact-id: helpers
 spec:
-  type: Service
-  owner: phil-rice
+  type: library
+  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/helpers/catalog.info.maven.yaml for javaoptics/helpers/pom.xml. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
-   -  component:one.xingyi.rawprocessors
+   -  component:one.xingyi.interfaces

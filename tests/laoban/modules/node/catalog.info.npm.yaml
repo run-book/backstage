@@ -2,8 +2,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: @laoban/fast-xml-parser
-  description: 
+  name: @laoban/node
+  description: The parts of Laoban that are just about package.json
   tags:
     - java
     - maven
@@ -11,9 +11,7 @@ metadata:
     backstage.io/source-location: Unknown scm
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating laoban/modules/node/catalog.info.npm.yaml for laoban/modules/node/package.json. <<owner>> is undefined
   lifecycle: experimental
   dependsOn: 
-   -  component:@laoban/xml
-   -  component:@laoban/utils
    -  component:@laoban/fileops

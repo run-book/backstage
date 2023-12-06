@@ -24,7 +24,7 @@ function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultN
       children: allChildrenUnder ( root ).filter ( r => all || !r.value.ignore ).map ( child => child.value.catalogName )
     })
   } )
-  const existingRoot = roots.find ( md => md.value.pathOffset === '' ) !== undefined
+  const existingRoot = roots.find ( md => moduleDataPath ( md.value ) === '.' ) !== undefined
   if ( !existingRoot ) {
     if ( defaultName === undefined ) result.push ( [ `No name for root` ] )
     else
@@ -46,7 +46,10 @@ export function makeLocationFiles ( mds: ModuleData[], template: string, name: s
   const result: ErrorsAnd<CatalogData>[] = lfds.map ( lfd => mapErrors ( lfd, ( { name, path, children } ) => {
     const dic = {
       name,
-      targets: children.map ( child => `    - component:./${child}` ).join ( '\n' )
+      targets: children.map ( child => {
+        const childPath = child.startsWith ( '.' ) ? child : `./${child}`;
+        return `    - ${childPath}`;
+      } ).join ( '\n' )
     }
     return ({
       catalogData: true,

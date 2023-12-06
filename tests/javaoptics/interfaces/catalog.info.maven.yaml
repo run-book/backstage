@@ -13,6 +13,6 @@ metadata:
     backstage.io/maven-artifact-id: interfaces
 spec:
   type: library
-  owner: phil-rice
+  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/interfaces/catalog.info.maven.yaml for javaoptics/interfaces/pom.xml. <<owner>> is undefined
   lifecycle: experimental
   
