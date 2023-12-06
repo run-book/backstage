@@ -31,8 +31,5 @@ const fileOps: FileOps = fileOpsNode ()
 const context: CommandContext = { command: program, fileOps, currentDirectory: process.cwd (), fileTypes: alLFileTypes }
 addDebugCommands ( context )
 addMakeCommand ( context )
-program.command ( "debug" ).description ( "just lists the flags you selected" ).action ( () => {
-  console.log ( program.optsWithGlobals () )
-} )
 
 const parsed = program.parseAsync ( process.argv );

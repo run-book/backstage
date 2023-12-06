@@ -6,6 +6,7 @@ import { defaultMakeCatalogFromArray, ModuleDependencyFileType } from "./filetyp
 // import { extractArtifactsFromNpmDependency, extractScm } from "../npm";
 import { Artifact, moduleDataPath, ModuleDependency } from "../module";
 import { makeTreeFromPathFnAndArray, Tree } from "../tree";
+import { catalogInfoFilename, Policy } from "../policy";
 
 export function nameToArtifact ( fullname: string, version: string ): Artifact {
   const split = fullname?.split ( '/' )
@@ -20,7 +21,7 @@ export function extractArtifactsFromNpmDependency ( dep: NameAnd<string> ): Arti
   return Object.entries ( dep ).map ( ( [ fullname, version ] ) =>
     nameToArtifact ( fullname, version ) )
 }
-export function simpleNpmModuleDependency ( pathOffset: string, npm: any, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
+export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, npm: any, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
   const fullname = npm.name
   const properties = npm.backstage ?? {}
   const version = npm.version
@@ -29,7 +30,7 @@ export function simpleNpmModuleDependency ( pathOffset: string, npm: any, debug:
   const scm = extractScm ( npm )
   const description = npm.description
   const ignore = fullname === undefined ? true : properties?.ignore ?? false
-  const catalogName = `${path.dirname ( pathOffset )}/catalog-info.npm.yaml`
+  const catalogName = catalogInfoFilename ( policy, 'npm', path.dirname ( pathOffset ) )
   return {
     sourceType: 'npm',
     parent: undefined,
@@ -45,10 +46,10 @@ export function simpleNpmModuleDependency ( pathOffset: string, npm: any, debug:
     deps,
   }
 }
-export async function loadNpm ( fileOps: FileOps, pathOffset: string, file: string, debug?: boolean ): Promise<ErrorsAnd<ModuleDependency>> {
+export async function loadNpm ( fileOps: FileOps, policy: Policy, pathOffset: string, file: string, debug?: boolean ): Promise<ErrorsAnd<ModuleDependency>> {
   const contents = await fileOps.loadFileOrUrl ( file );
   const json = await parseJson ( file ) ( contents )
-  const md = simpleNpmModuleDependency ( pathOffset, json, debug )
+  const md = simpleNpmModuleDependency ( pathOffset, policy, json, debug )
   return md;
 }
 

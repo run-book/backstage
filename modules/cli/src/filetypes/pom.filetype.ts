@@ -5,6 +5,7 @@ import { parseStringPromise } from "xml2js";
 import { defaultMakeCatalogFromArray, ModuleDependencyFileType, FileType } from "./filetypes";
 import { Artifact, isModuleDependency, ModuleData, ModuleDependency } from "../module";
 import { Tree } from "../tree";
+import { catalogInfoFilename, Policy } from "../policy";
 
 
 export function makeArtifact ( path: string, fragment: any, defArtifact?: Artifact ): ErrorsAnd<Artifact | undefined> {
@@ -38,7 +39,7 @@ export function extractPomDependencies ( pom: any, debug: boolean ): Artifact[] 
   deps.forEach ( dep => {dep[ 'fullname' ] = `${dep.groupId}.${dep.artifactId}`} )
   return deps
 }
-export function simplePomModuleDependency ( pathOffset: string, pom: any, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
+export function simplePomModuleDependency ( pathOffset: string, policy: Policy, pom: any, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
   const project = pom.project
   if ( project === undefined ) return [ `The file ${pathOffset} does not have a project element` ]
   const parent = makeArtifact ( `${pathOffset}/parent`, project.parent )
@@ -53,7 +54,7 @@ export function simplePomModuleDependency ( pathOffset: string, pom: any, debug:
   const ignore = properties?.ignore === 'true' ?? false
   const version = project.version
   const scm = project.scm?.url ?? project.scm?.connection
-  const catalogName = `${path.dirname ( pathOffset )}/catalog-info.mvn.yaml`
+  const catalogName = catalogInfoFilename ( policy, 'maven', path.dirname ( pathOffset ) )
   return {
     pathOffset,
     catalogName,
@@ -64,10 +65,10 @@ export function simplePomModuleDependency ( pathOffset: string, pom: any, debug:
   }
 }
 
-export async function loadAndParsePom ( fileOps: any, pathOffset: string, file: string, debug?: boolean ): Promise<ErrorsAnd<ModuleDependency>> {
+export async function loadAndParsePom ( fileOps: any, policy: Policy, pathOffset: string, file: string, debug?: boolean ): Promise<ErrorsAnd<ModuleDependency>> {
   const pomString = await fileOps.loadFileOrUrl ( file );
   const json = await parseStringPromise ( pomString, { explicitArray: false } )
-  const md = simplePomModuleDependency ( pathOffset, json, debug )
+  const md = simplePomModuleDependency ( pathOffset, policy, json, debug )
   return md
 }
 

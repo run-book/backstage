@@ -1,17 +1,17 @@
 import { CatalogData, isCatalogData, isModuleDependency, ModuleData, ModuleDependency, SourceType } from "../module";
-import { ErrorsAnd, flatMapK, hasErrors, mapK, NameAnd } from "@laoban/utils";
+import { ErrorsAnd, flatMapK, hasErrors, mapK } from "@laoban/utils";
 import { FileOps } from "@laoban/fileops";
 import { applyCatalogTemplateForKind } from "../templates";
 import { listFilesRecursively } from "../file.search";
 import path from "path";
-import { Tree } from "../tree";
+import { Policy } from "../policy";
 
 export interface CommonFileType {
   sourceType: SourceType
   //Does a filename match the requirements. Could be pom.xml. Could be backstage.xxx.yaml. Could be catalog-info.yaml... etc
   match: ( filename: string ) => boolean
   //Give a file and the parsed content what is the kind.
-  load: ( fileOps: FileOps, pathOffset: string, filename: string, debug?: boolean ) => Promise<ModuleData>
+  load: ( fileOps: FileOps, policy: Policy, pathOffset: string, filename: string, debug?: boolean ) => Promise<ModuleData>
 }
 export interface SimpleFileType extends CommonFileType {
   makeCatalogFromMd: ( md: ModuleData ) => Promise<ErrorsAnd<CatalogData>>
@@ -95,10 +95,10 @@ export async function findFilesAndFileType ( fileOps: FileOps, dir: string, fts:
   } );
 }
 
-export async function loadFiles ( fileOps: FileOps, dir: string, fts: FileAndFileType[], debug?: boolean ): Promise<ModuleData[]> {
+export async function loadFiles ( fileOps: FileOps, policy: Policy, dir: string, fts: FileAndFileType[], debug?: boolean ): Promise<ModuleData[]> {
   return await Promise.all (
     fts.map ( async ( { file, ft } ) =>
-      await ft.load ( fileOps, file, path.join ( dir, file ), debug ) ) )
+      await ft.load ( fileOps, policy, file, path.join ( dir, file ), debug ) ) )
 }
 
 export function withLocalDependencies ( mds: ModuleDependency[] ): ModuleDependency[] {
