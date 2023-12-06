@@ -6,17 +6,17 @@ metadata:
 spec:
   type: url
   targets:
-    - ./laoban/modules/cli/catalog.info.npm.yaml
-    - ./laoban/modules/comparefiles/catalog.info.npm.yaml
-    - ./laoban/modules/config/catalog.info.npm.yaml
-    - ./laoban/modules/debug/catalog.info.npm.yaml
-    - ./laoban/modules/fast-xml-parser/catalog.info.npm.yaml
-    - ./laoban/modules/fileops-node/catalog.info.npm.yaml
-    - ./laoban/modules/fileops/catalog.info.npm.yaml
-    - ./laoban/modules/generations/catalog.info.npm.yaml
-    - ./laoban/modules/laoban/catalog.info.npm.yaml
-    - ./laoban/modules/node/catalog.info.npm.yaml
-    - ./laoban/modules/utils/catalog.info.npm.yaml
-    - ./laoban/modules/validation/catalog.info.npm.yaml
-    - ./laoban/modules/variables/catalog.info.npm.yaml
-    - ./laoban/modules/xml/catalog.info.npm.yaml
+    - ./laoban/modules/cli/catalog-info.npm.yaml
+    - ./laoban/modules/comparefiles/catalog-info.npm.yaml
+    - ./laoban/modules/config/catalog-info.npm.yaml
+    - ./laoban/modules/debug/catalog-info.npm.yaml
+    - ./laoban/modules/fast-xml-parser/catalog-info.npm.yaml
+    - ./laoban/modules/fileops-node/catalog-info.npm.yaml
+    - ./laoban/modules/fileops/catalog-info.npm.yaml
+    - ./laoban/modules/generations/catalog-info.npm.yaml
+    - ./laoban/modules/laoban/catalog-info.npm.yaml
+    - ./laoban/modules/node/catalog-info.npm.yaml
+    - ./laoban/modules/utils/catalog-info.npm.yaml
+    - ./laoban/modules/validation/catalog-info.npm.yaml
+    - ./laoban/modules/variables/catalog-info.npm.yaml
+    - ./laoban/modules/xml/catalog-info.npm.yaml

@@ -6,14 +6,14 @@ metadata:
 spec:
   type: url
   targets:
-    - ./javaoptics/catalog.info.maven.yaml
-    - ./javaoptics/fp/catalog.info.maven.yaml
-    - ./javaoptics/helpers/catalog.info.maven.yaml
-    - ./javaoptics/interfaces/catalog.info.maven.yaml
-    - ./javaoptics/optics/catalog.info.maven.yaml
-    - ./javaoptics/optics/catalog.info.maven.yaml
-    - ./javaoptics/processors/catalog.info.maven.yaml
-    - ./javaoptics/profiling/catalog.info.maven.yaml
-    - ./javaoptics/rawprocessors/catalog.info.maven.yaml
-    - ./javaoptics/sqlandparams/catalog.info.maven.yaml
-    - ./javaoptics/validation/catalog.info.maven.yaml
+    - ./javaoptics/catalog-info.maven.yaml
+    - ./javaoptics/fp/catalog-info.maven.yaml
+    - ./javaoptics/helpers/catalog-info.maven.yaml
+    - ./javaoptics/interfaces/catalog-info.maven.yaml
+    - ./javaoptics/optics/catalog-info.maven.yaml
+    - ./javaoptics/optics/catalog-info.maven.yaml
+    - ./javaoptics/processors/catalog-info.maven.yaml
+    - ./javaoptics/profiling/catalog-info.maven.yaml
+    - ./javaoptics/rawprocessors/catalog-info.maven.yaml
+    - ./javaoptics/sqlandparams/catalog-info.maven.yaml
+    - ./javaoptics/validation/catalog-info.maven.yaml

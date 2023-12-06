@@ -1,7 +1,7 @@
 {
   "name": "@runbook/backstage",
   "description": "A cli for backstage tools",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "dist/index",
   "types": "dist/index",
   "bin": {

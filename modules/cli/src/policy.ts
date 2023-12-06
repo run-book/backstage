@@ -7,7 +7,7 @@ export interface Policy {
   name: string,
   description: string,
   version: string,
-  /** Default is <<path>>/catalog.info.<<sourceType>>.yaml */
+  /** Default is <<path>>/catalog-info.<<sourceType>>.yaml */
   catalogInfoPattern: string
 
 }
@@ -15,7 +15,7 @@ export const defaultPolicy: Policy = {
   name: 'default',
   description: 'Default policy',
   version: '0.0.1',
-  catalogInfoPattern: '<<path>>/catalog.info.<<sourceType>>.yaml'
+  catalogInfoPattern: '<<path>>/catalog-info.<<sourceType>>.yaml'
 }
 
 export async function loadPolicy ( fileOps: FileOps, policyUrl: string | undefined ): Promise<Policy> {
