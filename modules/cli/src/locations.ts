@@ -5,6 +5,7 @@ import { derefence } from "@laoban/variables";
 import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
 import { FileOps } from "@laoban/fileops";
 import path from "path";
+import { cleanString } from "./strings";
 
 export interface LocationFileData {
   path: string
@@ -28,14 +29,16 @@ function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultN
   } )
   const existingRootIndex = roots.findIndex ( md => moduleDataPath ( md.value ) === '.' )
   const existingRoot = roots[ existingRootIndex ]
-  const validExistingRoot = existingRoot && !hasErrors ( existingRoot.value ) && isNotExistingGenerated(existingRoot.value)
+  const validExistingRoot = existingRoot && !hasErrors ( existingRoot.value ) && isNotExistingGenerated ( existingRoot.value )
   // console.log('findLocationFileData', { existingRootIndex, existingRoot, validExistingRoot, defaultName, roots })
   if ( !validExistingRoot ) {
     if ( existingRootIndex !== -1 ) result.splice ( existingRootIndex, 1 )
     if ( defaultName === undefined ) result.push ( [ `No name for root` ] )
     else {
-      const newRoot = { path: './catalog-info.yaml', name: defaultName,
-        children: roots.map ( root => prefixWithDotIfNeeded ( path.dirname(root.value.catalogName) + '/catalog-info-yaml' ) ) };
+      const newRoot = {
+        path: './catalog-info.yaml', name: defaultName,
+        children: roots.map ( root => prefixWithDotIfNeeded ( path.dirname ( root.value.catalogName ) + '/catalog-info-yaml' ) )
+      };
       result.push ( newRoot )
     }
   }
@@ -43,7 +46,7 @@ function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultN
 }
 
 export function findRoots ( mds: ModuleData[], all: boolean ): Tree<ModuleDataWithoutErrors>[] {
-  const filtered = mds.filter ( md => !hasErrors ( md )).filter(isNotExistingGenerated) as ModuleDataWithoutErrors[]
+  const filtered = mds.filter ( md => !hasErrors ( md ) ).filter ( isNotExistingGenerated ) as ModuleDataWithoutErrors[]
   const tree = makeTreeFromPathFnAndArray<ModuleDataWithoutErrors> ( moduleDataPath, filtered )
   const roots = Object.values ( tree ).filter ( t => t.parent === undefined && !hasErrors ( t.value ) ) as Tree<ModuleDataWithoutErrors>[]
   return roots;
@@ -54,7 +57,7 @@ export function makeLocationFiles ( mds: ModuleData[], template: string, name: s
   const lfds = findLocationFileData ( roots, name, all )
   const result: ErrorsAnd<CatalogData>[] = lfds.map ( lfd => mapErrors ( lfd, ( { name, path, children } ) => {
     const dic = {
-      name,
+      name: cleanString ( name ),
       targets: children.map ( child => `    - ${child}` ).join ( '\n' )
     }
     return ({
