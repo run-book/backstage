@@ -74,7 +74,7 @@ export async function defaultMakeCatalogFromArray ( fileOps: FileOps, defaults: 
   const dic = makeDictionary ( defaults, array )
   const value = await applyCatalogTemplateForKind ( fileOps, templateDir, md, dic )
   if ( hasErrors ( value ) ) return value
-  return { ...md, catalogData: true, value }
+  return { ...md, catalogData: true, value, existingGenerated: false }
 }
 
 export const isFile = ( fts: FileType[] ) => ( file: string ): boolean => {
@@ -89,9 +89,11 @@ export type FileAndFileType = {
 }
 export async function findFilesAndFileType ( fileOps: FileOps, dir: string, fts: FileType[] ): Promise<FileAndFileType[]> {
   const files = await listFilesRecursively ( fileOps, dir, isFile ( fts ) )
-  return files.map ( file => {
-    const ft = fts.find ( ft => ft.match ( path.basename ( file ) ) );
-    return ({ file: path.relative ( dir, file ).replace ( /\\/g, '/' ), ft });
+  return files.map ( f => {
+    const ft = fts.find ( ft => ft.match ( path.basename ( f ) ) );
+    let file = path.relative ( dir, f ).replace ( /\\/g, '/' );
+    if ( file === '.' ) file = ''
+    return ({ file: file, ft });
   } );
 }
 

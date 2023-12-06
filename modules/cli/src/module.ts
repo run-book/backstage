@@ -26,8 +26,16 @@ export interface CatalogData {
   catalogName: string
   ignore: boolean
   value: string
+  //If true this is a generated file that existed at start of run
+  existingGenerated: boolean
 }
 
+export function isExistingGenerated ( md: ModuleData ): boolean {
+  return isCatalogData ( md ) && md.existingGenerated
+}
+export function isNotExistingGenerated ( md: ModuleData ): boolean {
+  return !isExistingGenerated ( md )
+}
 export interface ModuleDependency extends Artifact {
   sourceType: SourceType
   //This is the entity name of any parent. Meaningful in pom.xml. Not in package.json
@@ -40,6 +48,7 @@ export interface ModuleDependency extends Artifact {
   scm: string
   //If true, then this is ignored for most purposes. It won't be added to the catalog
   ignore: boolean
+
   // in package.json we can have names like @laoban/xxx. In pom.xml this is the groupId
   description: string
   // Will normally be Component.
@@ -60,7 +69,8 @@ export function debugStringForMd ( md: ModuleData ): string {
 }
 export function moduleDataPath ( md: ModuleData ): string|undefined {
   if ( hasErrors ( md ) ) return undefined
-  return path.dirname(md.pathOffset)
+  const result = path.dirname(md.pathOffset);
+  return result === '.' ? result : './'+ result
 }
 
 export function isCatalogData ( md: ModuleData ): md is CatalogData {

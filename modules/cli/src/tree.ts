@@ -21,7 +21,7 @@ export function parentPaths<T> ( path: string ): string[] {
   return result
 }
 
-export function allChildrenUnder( tree: Tree<any> ): Tree<any>[] {
+export function allChildrenUnder<T>( tree: Tree<T> ): Tree<T>[] {
   const children = tree.children.map ( child => allChildrenUnder ( child ) )
   return [ tree, ...children.flat () ]
 }

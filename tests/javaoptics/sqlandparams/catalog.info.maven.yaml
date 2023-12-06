@@ -13,7 +13,7 @@ metadata:
     backstage.io/maven-artifact-id: sqlandparams
 spec:
   type: library
-  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/sqlandparams/catalog.info.maven.yaml for javaoptics/sqlandparams/pom.xml. <<owner>> is undefined
+  owner: phil-rice
   lifecycle: experimental
   dependsOn: 
    -  component:one.xingyi.fp

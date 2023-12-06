@@ -13,7 +13,7 @@ metadata:
     backstage.io/maven-artifact-id: processors
 spec:
   type: Service
-  owner: //LAOBAN-UPDATE-ERROR Creating javaoptics/processors/catalog.info.maven.yaml for javaoptics/processors/pom.xml. <<owner>> is undefined
+  owner: phil-rice
   lifecycle: experimental
   dependsOn: 
    -  component:one.xingyi.rawprocessors

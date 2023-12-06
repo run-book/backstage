@@ -11,7 +11,7 @@ metadata:
     backstage.io/source-location: Unknown scm
 spec:
   type: library
-  owner: //LAOBAN-UPDATE-ERROR Creating laoban/modules/fast-xml-parser/catalog.info.npm.yaml for laoban/modules/fast-xml-parser/package.json. <<owner>> is undefined
+  owner: phil-rice
   lifecycle: experimental
   dependsOn: 
    -  component:@laoban/xml

@@ -55,7 +55,7 @@ export async function loadNpm ( fileOps: FileOps, policy: Policy, pathOffset: st
 
 export function makeNpmArray ( trees: NameAnd<Tree<ModuleDependency>>, ): ( md: ModuleDependency ) => ModuleDependency[] {
   return ( md: ModuleDependency ) => {
-    const p = path.dirname ( md.pathOffset )
+    const p = moduleDataPath(md)
     const tree = trees[ p ]
     if ( tree === undefined ) throw new Error ( `The tree is not defined for ${p}` )
     const parent = tree.parent
