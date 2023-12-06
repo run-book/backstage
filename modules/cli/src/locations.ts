@@ -4,6 +4,7 @@ import { ErrorsAnd, hasErrors, mapErrors } from "@laoban/utils";
 import { derefence } from "@laoban/variables";
 import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
 import { FileOps } from "@laoban/fileops";
+import path from "path";
 
 export interface LocationFileData {
   path: string
@@ -18,7 +19,7 @@ function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultN
     if ( name === undefined && defaultName === undefined ) return [ `No name for ${root.value.pathOffset}` ]
     if ( name === undefined ) name = defaultName + '/' + root.value.pathOffset
     return ({
-      path: root.value.pathOffset,
+      path: path.dirname ( root.value.pathOffset ) + '/catalog-info.yaml',
       name,
       children: allChildrenUnder ( root ).filter ( r => all || !r.value.ignore ).map ( child => child.value.catalogName )
     })
@@ -27,7 +28,7 @@ function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultN
   if ( !existingRoot ) {
     if ( defaultName === undefined ) result.push ( [ `No name for root` ] )
     else
-      result.push ( { path: '', name: defaultName, children: roots.map ( root => root.value.pathOffset ) } )
+      result.push ( { path: 'catalog-info.yaml', name: defaultName, children: roots.map ( root => root.value.pathOffset ) } )
   }
   return result;
 }

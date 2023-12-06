@@ -177,6 +177,11 @@ export function addListCommand ( context: CommandContext ) {
       displayErrors ( loaded );
     } )
 }
+
+export function addNukeCommand(context: CommandContext){
+  context.command.command("nuke")
+
+}
 export function addLocationsCommand ( context: CommandContext ) {
   context.command.command ( "locations" )
     .description ( "show all the places that location files will be added, and optionally their content" )
@@ -202,9 +207,10 @@ export function addLocationsCommand ( context: CommandContext ) {
         if ( content )
           process.stdout.write ( `${root.value}\n\n` )
       }
-      displayErrors ( [ ...loaded, ...roots ] );
+      displayErrors ( [...loaded,...roots]  );
     } )
 }
+
 export function addDebugCommands ( context: CommandContext ) {
   const command: Command = context.command.command ( 'debug' ).description ( 'commands help resolve issues' )
   const newContext: CommandContext = { ...context, command }

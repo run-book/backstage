@@ -8,7 +8,7 @@ metadata:
     - java
     - maven
   annotations:
-    backstage.io/source-location: <<repository>>
+    backstage.io/source-location: <<scm>>
     backstage.io/maven-group-id: <<groupId>>
     backstage.io/maven-artifact-id: <<artifactId>>
 spec:
