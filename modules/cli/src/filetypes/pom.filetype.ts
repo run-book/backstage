@@ -53,7 +53,7 @@ export function simplePomModuleDependency ( pathOffset: string, pom: any, debug:
   const ignore = properties?.ignore === 'true' ?? false
   const version = project.version
   const scm = project.scm?.url ?? project.scm?.connection
-  const catalogName = `${path.dirname ( pathOffset )}/catalog-info.yaml`
+  const catalogName = `${path.dirname ( pathOffset )}/catalog-info.mvn.yaml`
   return {
     pathOffset,
     catalogName,

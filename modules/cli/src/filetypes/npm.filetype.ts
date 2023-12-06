@@ -29,7 +29,7 @@ export function simpleNpmModuleDependency ( pathOffset: string, npm: any, debug:
   const scm = extractScm ( npm )
   const description = npm.description
   const ignore = fullname === undefined ? true : properties?.ignore ?? false
-  const catalogName = `${path.dirname ( pathOffset )}/catalog-info.yaml`
+  const catalogName = `${path.dirname ( pathOffset )}/catalog-info.npm.yaml`
   return {
     sourceType: 'npm',
     parent: undefined,

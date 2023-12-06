@@ -1,9 +1,10 @@
 import { CommandContext } from "./context";
 import { Command } from "commander";
-import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary } from "./filetypes/filetypes";
+import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary, processFileResults } from "./filetypes/filetypes";
 import { hasErrors } from "@laoban/utils";
 import { displayErrors, isCatalogData, isModuleDependency, ModuleDependency } from "./module";
 import { loadFilesAndFilesTypesForDisplay } from "./commands";
+import path from "path";
 
 
 export function addDataCommand ( context: CommandContext ) {
@@ -133,6 +134,31 @@ export function addRawCommand ( context: CommandContext ) {
       }
     } )
 }
+export function addLocationsCommand ( context: CommandContext ) {
+  context.command.command ( "locations" )
+    .description ( "shows all the places files will be added" )
+    .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
+    .option ( '-d, --debug', 'output extra debugging' )
+    .option ( 'a|--all', 'include ignored files' )
+
+    .action ( async ( opts ) => {
+      const { fileTypes, debug, all } = opts
+      const fts = filterFileTypes ( context.fileTypes, opts.fileTypes )
+      if ( debug ) console.log ( 'fileTypes', fts.map ( ft => ft.sourceType ) )
+      const { command, fileOps, currentDirectory } = context
+      const dir = command.optsWithGlobals ().directory ?? currentDirectory
+      const { ffts, maxFileLength, maxSourceType } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
+      const mds = await loadFiles ( fileOps, dir, ffts, debug )
+      for ( const md of mds ) {
+        if ( hasErrors ( md ) ) continue
+        if ( md.ignore && !all ) continue
+        const ignore = all ? (md.ignore ? ' ignore' : '       ') : ''
+        process.stdout.write ( `${md.catalogName.padEnd ( maxFileLength )} ${md.sourceType.padEnd ( maxSourceType )}${ignore} from ${md.pathOffset}\n` )
+      }
+      displayErrors ( mds );
+    } )
+}
+
 export function addListCommand ( context: CommandContext ) {
   context.command.command ( "list" )
     .description ( "list all modules." )
@@ -170,6 +196,7 @@ export function addDebugCommands ( context: CommandContext ) {
   addArraysCommand ( newContext );
   // addTreesCommands ( newContext );
   addDataCommand ( newContext );
+  addLocationsCommand ( newContext );
   addTemplateVarsCommand ( newContext );
   addListCommand ( newContext );
 }
