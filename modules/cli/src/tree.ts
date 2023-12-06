@@ -21,6 +21,11 @@ export function parentPaths<T> ( path: string ): string[] {
   return result
 }
 
+export function allChildrenUnder( tree: Tree<any> ): Tree<any>[] {
+  const children = tree.children.map ( child => allChildrenUnder ( child ) )
+  return [ tree, ...children.flat () ]
+}
+
 export function makeTreeFromPathFnAndArray<T> ( pathFn: ( t: T ) => string | undefined, items: T[] ): NameAnd<Tree<T>> {
   const validItems = items.filter ( item => pathFn ( item ) !== undefined )
   const trees: NameAnd<Tree<T>> = Object.fromEntries ( validItems.map ( item => [ pathFn ( item ), { value: item, children: [] } ] ) )

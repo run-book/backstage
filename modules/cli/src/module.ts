@@ -49,6 +49,7 @@ export interface ModuleDependency extends Artifact {
   //The dependencies in the pom.xml or package.json
   deps: Artifact[]
 }
+export type ModuleDataWithoutErrors = ModuleDependency | CatalogData
 export type ModuleData = ErrorsAnd<ModuleDependency | CatalogData>
 
 export function debugStringForMd ( md: ModuleData ): string {

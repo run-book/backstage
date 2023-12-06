@@ -2,10 +2,12 @@ import { CommandContext } from "./context";
 import { Command } from "commander";
 import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary } from "./filetypes/filetypes";
 import { hasErrors } from "@laoban/utils";
-import { debugStringForMd, displayErrors, isCatalogData, isModuleDependency, ModuleData, moduleDataPath } from "./module";
+import { CatalogData, debugStringForMd, displayErrors, isCatalogData, isModuleDependency, ModuleData, moduleDataPath, ModuleDataWithoutErrors } from "./module";
 import { loadFilesAndFilesTypesForDisplay } from "./commands";
 import { makeTreeFromPathFnAndArray, treeToString } from "./tree";
 import { loadPolicy } from "./policy";
+import { loadTemplateAndMakeLocationFiles, makeLocationFiles } from "./locations";
+import { templateDir } from "./templates";
 
 
 export function addDataCommand ( context: CommandContext ) {
@@ -119,8 +121,8 @@ export function addTemplateVarsCommand ( context: CommandContext ) {
       displayErrors ( loaded );
     } )
 }
-export function addLocationsCommand ( context: CommandContext ) {
-  context.command.command ( "locations" )
+export function addFilesCommand ( context: CommandContext ) {
+  context.command.command ( "files" )
     .description ( "shows all the places files will be added" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
@@ -175,13 +177,42 @@ export function addListCommand ( context: CommandContext ) {
       displayErrors ( loaded );
     } )
 }
+export function addLocationsCommand ( context: CommandContext ) {
+  context.command.command ( "locations" )
+    .description ( "show all the places that location files will be added, and optionally their content" )
+    .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
+    .option ( '-d, --debug', 'output extra debugging' )
+    .option ( "--content", "show the content of the location files" )
+    .option ( "-n|--name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed" )
+    .option ( 'p|--policy <policy>', 'policy url' )
+    .option ( '-t, --template <template>', 'the root template directory. Only use if you know what you are doing', templateDir )
+    .action ( async ( opts ) => {
+      const { fileTypes, debug, content, all, policy, template, name } = opts
+      const fts = filterFileTypes ( context.fileTypes, opts.fileTypes )
+      if ( debug ) console.log ( 'fileTypes', fts.map ( ft => ft.sourceType ) )
+      const { command, fileOps, currentDirectory } = context
+      const dir = command.optsWithGlobals ().directory ?? currentDirectory
+      const { ffts } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
+      const loaded = await loadFiles ( fileOps, await loadPolicy ( fileOps, policy ), dir, ffts, debug )
+      const roots = await loadTemplateAndMakeLocationFiles ( fileOps, template, loaded, name, all )
+      const rootsWithoutErrors = roots.filter ( r => !hasErrors ( r ) ) as CatalogData[]
+      rootsWithoutErrors.sort ( ( a, b ) => a.pathOffset.localeCompare ( b.pathOffset ) )
+      for ( const root of rootsWithoutErrors ) {
+        process.stdout.write ( `${root.catalogName}\n` )
+        if ( content )
+          process.stdout.write ( `${root.value}\n\n` )
+      }
+      displayErrors ( [ ...loaded, ...roots ] );
+    } )
+}
 export function addDebugCommands ( context: CommandContext ) {
   const command: Command = context.command.command ( 'debug' ).description ( 'commands help resolve issues' )
   const newContext: CommandContext = { ...context, command }
   addArraysCommand ( newContext );
   addTreesCommands ( newContext );
   addDataCommand ( newContext );
-  addLocationsCommand ( newContext );
+  addFilesCommand ( newContext );
   addTemplateVarsCommand ( newContext );
   addListCommand ( newContext );
+  addLocationsCommand ( newContext );
 }

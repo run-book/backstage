@@ -6,7 +6,7 @@ import { FileOps } from "@laoban/fileops";
 import { CommandContext } from "./src/context";
 import { alLFileTypes } from "./src/filetypes/allFileTypes";
 import { addDebugCommands } from "./src/debug.commands";
-import { addMakeCommand } from "./src/commands";
+import { addCommands } from "./src/commands";
 
 const fetch = require ( 'node-fetch' );
 
@@ -30,6 +30,6 @@ const program: Command = require ( 'commander' )
 const fileOps: FileOps = fileOpsNode ()
 const context: CommandContext = { command: program, fileOps, currentDirectory: process.cwd (), fileTypes: alLFileTypes }
 addDebugCommands ( context )
-addMakeCommand ( context )
+addCommands ( context )
 
 const parsed = program.parseAsync ( process.argv );
