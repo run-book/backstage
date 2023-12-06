@@ -1,23 +1,37 @@
-import { CatalogData, isCatalogData, isModuleDependency, ModuleData, moduleDataPath, ModuleDependency, SourceType } from "../module";
-import { ErrorsAnd, hasErrors, NameAnd } from "@laoban/utils";
+import { CatalogData, isCatalogData, isModuleDependency, ModuleData, ModuleDependency, SourceType } from "../module";
+import { ErrorsAnd, flatMapK, hasErrors, mapK, NameAnd } from "@laoban/utils";
 import { FileOps } from "@laoban/fileops";
 import { applyCatalogTemplateForKind } from "../templates";
 import { listFilesRecursively } from "../file.search";
 import path from "path";
-import { makeTreeFromPathFnAndArray, Tree } from "../tree";
+import { Tree } from "../tree";
 
-
-export type FileType = {
-  //Must be unique.
+export interface CommonFileType {
   sourceType: SourceType
   //Does a filename match the requirements. Could be pom.xml. Could be backstage.xxx.yaml. Could be catalog-info.yaml... etc
   match: ( filename: string ) => boolean
   //Give a file and the parsed content what is the kind.
   load: ( fileOps: FileOps, pathOffset: string, filename: string, debug?: boolean ) => Promise<ModuleData>
-  //Given a module this will find the parents and place into an array with the md at the end
-  makeArray: ( trees: NameAnd<Tree<ModuleDependency>>, entityToMd: NameAnd<ModuleData> ) => ( md: ModuleData ) => ModuleData[]
-  makeCatalog: ( fileOps: FileOps, defaults: any, templateDir: string, array: ModuleData[] ) => Promise<ErrorsAnd<CatalogData>>
 }
+export interface SimpleFileType extends CommonFileType {
+  makeCatalogFromMd: ( md: ModuleData ) => Promise<ErrorsAnd<CatalogData>>
+}
+export function isSimpleFileType ( ft: FileType ): ft is SimpleFileType {
+  return (ft as SimpleFileType).makeCatalogFromMd !== undefined
+}
+
+//This is for filetypes that work on module dependencies such as pom.xml and package.json. Importantly they have parents... and thus we need the arrays
+//pom.xml and package.json need different data structures (ArrayHelper) to work out who is their parent
+export interface ModuleDependencyFileType<ArrayHelper> extends CommonFileType {
+  makeArrayHelper: ( mds: ModuleDependency[] ) => ArrayHelper
+  //Given a module this will find the parents and place into an array with the md at the end
+  makeArray: ( arrayHelper: ArrayHelper ) => ( md: ModuleDependency ) => ModuleDependency[]
+  makeCatalogFromArray: ( fileOps: FileOps, defaults: any, templateDir: string, array: ModuleDependency[] ) => Promise<ErrorsAnd<CatalogData>>
+}
+export function isModuleDependencyFileType ( ft: FileType ): ft is ModuleDependencyFileType<any> {
+  return (ft as ModuleDependencyFileType<any>).makeCatalogFromArray !== undefined
+}
+export type FileType = SimpleFileType | ModuleDependencyFileType<any>
 
 function makeDictionaryPart ( existing: any, md: ModuleDependency ) {
   const existingDependsOn = existing.dependsOn ?? []
@@ -46,7 +60,12 @@ export function makeDictionary ( defaults: any, mds: ModuleData[] ): any {
   return dic
 }
 
-export async function defaultMakeCatalog ( fileOps: FileOps, defaults: any, templateDir: string, array: ModuleData[] ): Promise<ErrorsAnd<CatalogData>> {
+export async function defaultMakeCatalogFromCD ( md: ModuleData ): Promise<ErrorsAnd<CatalogData>> {
+  if ( hasErrors ( md ) ) return md
+  if ( isCatalogData ( md ) ) return md
+  throw new Error ( `The md is not a catalog data: ${md}` )
+}
+export async function defaultMakeCatalogFromArray ( fileOps: FileOps, defaults: any, templateDir: string, array: ModuleData[] ): Promise<ErrorsAnd<CatalogData>> {
   if ( array.length === 0 ) throw new Error ( `The array is empty` )
   const md = array[ array.length - 1 ]
   if ( hasErrors ( md ) ) return md
@@ -82,26 +101,9 @@ export async function loadFiles ( fileOps: FileOps, dir: string, fts: FileAndFil
       await ft.load ( fileOps, file, path.join ( dir, file ), debug ) ) )
 }
 
-export type FileResults = {
-  mds: ModuleData[]
-  trees: NameAnd<Tree<ModuleDependency>>,
-  entityToMd: NameAnd<ModuleData>
-}
-export function mdsToFileResults ( moduleData: ModuleData[] ): FileResults {
-  const localEntities = moduleData.filter ( md => !hasErrors ( md ) && isModuleDependency ( md ) ).map ( md => (md as ModuleDependency).fullname )
-  const mds = moduleData.map ( md => {
-    if ( hasErrors ( md ) ) return md
-    if ( isCatalogData ( md ) ) return md
-    return ({ ...md, deps: md.deps.filter ( d => localEntities.includes ( d.fullname ) ) });
-  } )
-  const entityToMd: NameAnd<ModuleData> = {}
-  for ( const md of mds ) {
-    if ( hasErrors ( md ) ) continue
-    if ( isModuleDependency ( md ) ) entityToMd[ md.fullname ] = md
-  }
-  const justModuleDependencies: ModuleDependency[] = mds.filter ( isModuleDependency ) as ModuleDependency[]
-  const trees = makeTreeFromPathFnAndArray<ModuleDependency> ( moduleDataPath, justModuleDependencies )
-  return { mds, trees, entityToMd }
+export function withLocalDependencies ( mds: ModuleDependency[] ): ModuleDependency[] {
+  const localEntities = mds.map ( md => (md as ModuleDependency).fullname )
+  return mds.map ( md => ({ ...md, deps: md.deps.filter ( d => localEntities.includes ( d.fullname ) ) }) )
 }
 
 
@@ -125,16 +127,34 @@ export function fileTypeFromMd ( fts: FileType[], md: ModuleData ): FileType | u
   if ( !ft ) throw new Error ( `Unknown file type: ${md.sourceType}` )
   return ft
 }
-export async function processOne ( fileOps: FileOps, defaults: any, templateDir: string, fts: FileType[], fileResults: FileResults, md: ModuleData ): Promise<ErrorsAnd<CatalogData>> {
-  if ( hasErrors ( md ) ) return md
-  if ( isCatalogData ( md ) ) return md
-  const ft = fileTypeFromMd ( fts, md );
-  if ( !ft ) throw new Error ( `Unknown file type: ${md.sourceType}` )
-  const array = ft.makeArray ( fileResults.trees, fileResults.entityToMd ) ( md );
-  return ft.makeCatalog ( fileOps, defaults, templateDir, array );
+
+export function processAllForSimpleFT ( ft: SimpleFileType, mds: ModuleData[] ): Promise<ErrorsAnd<CatalogData>[]> {
+  const mdsForFt = mds.filter ( md => !hasErrors ( md ) && md.sourceType === ft.sourceType )
+  return mapK ( mdsForFt, (md => ft.makeCatalogFromMd ( md )) )
 }
-export async function processFileResults ( fileOps: FileOps, defaults: any, templateDir: string, fts: FileType[], fileResults: FileResults ): Promise<ErrorsAnd<CatalogData>[]> {
-  return await Promise.all ( fileResults.mds.map ( async md =>
-    processOne ( fileOps, defaults, templateDir, fts, fileResults, md ) ) )
+export async function processOne<ArrayHelper> ( fileOps: FileOps, defaults: any, templateDir: string, ft: ModuleDependencyFileType<ArrayHelper>, arrayHelper: ArrayHelper, md: ModuleDependency ): Promise<ErrorsAnd<CatalogData>> {
+  const array = ft.makeArray ( arrayHelper ) ( md );
+  return ft.makeCatalogFromArray ( fileOps, defaults, templateDir, array );
+}
+export function justModuleDependenciesForFtWithLocalDeps<ArrayHelper> ( mds: ModuleData[], ft: ModuleDependencyFileType<ArrayHelper> ) {
+  const mdsForFt = mds.filter ( md => !hasErrors ( md ) && md.sourceType === ft.sourceType ) as ModuleDependency[]
+  const withLocalDeps = withLocalDependencies ( mdsForFt )
+  return withLocalDeps;
+}
+export function processAllForModuleDependencyFt<ArrayHelper> ( fileOps: FileOps, defaults: any, templateDir: string, ft: ModuleDependencyFileType<ArrayHelper>, mds: ModuleData[] ): Promise<ErrorsAnd<CatalogData>[]> {
+  const withLocalDeps = justModuleDependenciesForFtWithLocalDeps ( mds, ft );
+  const arrayHelper = ft.makeArrayHelper ( withLocalDeps )
+  return mapK ( withLocalDeps, md => processOne ( fileOps, defaults, templateDir, ft, arrayHelper, md ) )
+}
+export function processForFileType ( fileOps: FileOps, defaults: any, templateDir: string, mds: ModuleData[], ft: FileType ): Promise<ErrorsAnd<CatalogData>[]> {
+  if ( isSimpleFileType ( ft ) ) return processAllForSimpleFT ( ft, mds )
+  if ( isModuleDependencyFileType ( ft ) ) return processAllForModuleDependencyFt ( fileOps, defaults, templateDir, ft, mds )
+  throw new Error ( `Unknown file type ${ft}` )
+}
+export async function processFileResults ( fileOps: FileOps, defaults: any, templateDir: string, fts: FileType[], mds: ModuleData[] ): Promise<ErrorsAnd<CatalogData>[]> {
+  const removeIgnored = mds.filter ( md => !hasErrors ( md ) && !md.ignore )
+  const processed = await flatMapK ( fts, async ft => processForFileType ( fileOps, defaults, templateDir, removeIgnored, ft ) );
+  const existingErrors = mds.filter ( hasErrors )
+  return [ ...processed, ...existingErrors ]
 }
 

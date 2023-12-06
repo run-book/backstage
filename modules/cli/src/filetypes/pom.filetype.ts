@@ -2,8 +2,8 @@ import { ErrorsAnd, hasErrors, NameAnd } from "@laoban/utils";
 
 import path from "path";
 import { parseStringPromise } from "xml2js";
-import { defaultMakeCatalog, FileType } from "./filetypes";
-import { Artifact, ModuleData, ModuleDependency } from "../module";
+import { defaultMakeCatalogFromArray, ModuleDependencyFileType, FileType } from "./filetypes";
+import { Artifact, isModuleDependency, ModuleData, ModuleDependency } from "../module";
 import { Tree } from "../tree";
 
 
@@ -71,18 +71,26 @@ export async function loadAndParsePom ( fileOps: any, pathOffset: string, file: 
   return md
 }
 
-export function makePomArray ( trees: NameAnd<Tree<ModuleData>>, entityToMd: NameAnd<ModuleDependency> ): ( md: ModuleDependency ) => ModuleDependency[] {
+export function makePomArray ( entityToMd: NameAnd<ModuleDependency> ): ( md: ModuleDependency ) => ModuleDependency[] {
   return ( md: ModuleDependency ) => {
     const parent = entityToMd[ md.parent?.fullname ?? '' ]
     // console.log(`makePomArray`, md.pathOffset, 'parent',md.parent,  parent);
     if ( parent === undefined ) return [ md ]
-    return [ ...makePomArray ( trees, entityToMd ) ( parent ), md ]
+    return [ ...makePomArray ( entityToMd ) ( parent ), md ]
   }
 }
-export const pomFiletype: FileType = {
+
+export function pomArrayHelper ( mds: ModuleData[] ): NameAnd<ModuleDependency> {
+  const filters: ModuleDependency[] = mds.filter ( md => !hasErrors ( md ) && isModuleDependency ( md ) && md.sourceType === 'maven' ) as ModuleDependency[];
+  const result: NameAnd<ModuleDependency> = Object.fromEntries ( filters.map ( md => [ md.fullname, md ] ) );
+  return result;
+}
+/** The array helper is map from the entity name to the module data for that entity. And only for poms. This lets us find our parent as poms include the name of the parent */
+export const pomFiletype: ModuleDependencyFileType<NameAnd<ModuleDependency>> = {
   sourceType: 'maven',
   match: ( filename: string ) => filename === 'pom.xml',
   load: loadAndParsePom,
+  makeArrayHelper: pomArrayHelper,
   makeArray: makePomArray,
-  makeCatalog: defaultMakeCatalog
+  makeCatalogFromArray: defaultMakeCatalogFromArray
 }

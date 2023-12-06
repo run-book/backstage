@@ -1,8 +1,7 @@
 import { CommandContext } from "./context";
-import { Command } from "commander";
-import { FileType, fileTypeFromMd, filterFileTypes, findFilesAndFileType, loadFiles, makeDictionary, mdsToFileResults, processFileResults } from "./filetypes/filetypes";
+import { FileType, filterFileTypes, findFilesAndFileType, loadFiles, processFileResults } from "./filetypes/filetypes";
 import { hasErrors } from "@laoban/utils";
-import { displayErrors, isCatalogData, isModuleDependency, ModuleData } from "./module";
+import { displayErrors } from "./module";
 import { FileOps } from "@laoban/fileops";
 import { templateDir } from "./templates";
 import path from "path";
@@ -31,9 +30,7 @@ export function addMakeCommand ( context: CommandContext ) {
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
       const loaded = await loadFiles ( fileOps, dir, ffts, debug )
-      const nonIgnores = loaded.filter ( md => !hasErrors ( md ) && !md.ignore )
-      const fileResults = mdsToFileResults ( nonIgnores )
-      const cds = await processFileResults ( fileOps, { owner, lifecycle }, template, fts, fileResults )
+      const cds = await processFileResults ( fileOps, { owner, lifecycle }, template, fts, loaded )
       for ( const cd of cds ) {
         if ( hasErrors ( cd ) ) return
         if ( dryrun ) {

@@ -2,10 +2,10 @@ import { ErrorsAnd, NameAnd } from "@laoban/utils";
 
 import path from "path";
 import { FileOps, parseJson } from "@laoban/fileops";
-import { defaultMakeCatalog, FileType } from "./filetypes";
+import { defaultMakeCatalogFromArray, ModuleDependencyFileType } from "./filetypes";
 // import { extractArtifactsFromNpmDependency, extractScm } from "../npm";
-import { Artifact, ModuleData, ModuleDependency } from "../module";
-import { Tree } from "../tree";
+import { Artifact, moduleDataPath, ModuleDependency } from "../module";
+import { makeTreeFromPathFnAndArray, Tree } from "../tree";
 
 export function nameToArtifact ( fullname: string, version: string ): Artifact {
   const split = fullname?.split ( '/' )
@@ -52,20 +52,25 @@ export async function loadNpm ( fileOps: FileOps, pathOffset: string, file: stri
   return md;
 }
 
-export function makeNpmArray ( trees: NameAnd<Tree<ModuleDependency>>, entityToMd: NameAnd<ModuleDependency> ): ( md: ModuleDependency ) => ModuleDependency[] {
+export function makeNpmArray ( trees: NameAnd<Tree<ModuleDependency>>, ): ( md: ModuleDependency ) => ModuleDependency[] {
   return ( md: ModuleDependency ) => {
-    const p = path.dirname(md.pathOffset)
+    const p = path.dirname ( md.pathOffset )
     const tree = trees[ p ]
     if ( tree === undefined ) throw new Error ( `The tree is not defined for ${p}` )
     const parent = tree.parent
     if ( parent === undefined ) return [ md ]
-    return [ ...makeNpmArray ( trees, entityToMd ) ( parent.value ), md ]
+    return [ ...makeNpmArray ( trees ) ( parent.value ), md ]
   }
 }
-export const npmFiletype: FileType = {
+
+export function makeNpmArrayHelper ( mds: ModuleDependency[] ) {
+  return makeTreeFromPathFnAndArray<ModuleDependency> ( moduleDataPath, mds )
+}
+export const npmFiletype: ModuleDependencyFileType<NameAnd<Tree<ModuleDependency>>> = {
   sourceType: 'npm',
   match: ( filename: string ) => filename === 'package.json',
   load: loadNpm,
+  makeArrayHelper: makeNpmArrayHelper,
   makeArray: makeNpmArray,
-  makeCatalog: defaultMakeCatalog
+  makeCatalogFromArray: defaultMakeCatalogFromArray
 }
