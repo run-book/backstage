@@ -9,7 +9,7 @@ metadata:
 
   annotations:
     backstage.io/source-location: Unknown scm
-  
+    backstage.io/techdocs-ref: .
 spec:
   type: library
   owner: phil-rice

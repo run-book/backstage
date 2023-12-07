@@ -1,6 +1,6 @@
 import { CommandContext } from "./context";
 import { Command } from "commander";
-import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary } from "./filetypes/filetypes";
+import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary, withoutErrors } from "./filetypes/filetypes";
 import { flatMapK, hasErrors } from "@laoban/utils";
 import { CatalogData, debugStringForMd, displayErrors, isCatalogData, isModuleDependency, ModuleData, moduleDataPath, ModuleDataWithoutErrors } from "./module";
 import { loadFilesAndFilesTypesForDisplay } from "./commands";
@@ -126,7 +126,7 @@ export function addTemplateVarsCommand ( context: CommandContext ) {
 }
 export function addFilesCommand ( context: CommandContext ) {
   context.command.command ( "files" )
-    .description ( "shows all the places files will be added" )
+    .description ( "shows all the places catalog-info.xxx.yaml files will be added (so not the location files)" )
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
     .option ( 'a, --all', 'include ignored files' )
@@ -139,11 +139,12 @@ export function addFilesCommand ( context: CommandContext ) {
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts, maxFileLength, maxSourceType } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
       const mds = await loadFiles ( fileOps, await loadPolicy ( fileOps, policy ), dir, ffts, debug )
+      const maxCatalog = withoutErrors(mds).reduce ( ( acc, md ) => Math.max ( acc, md.catalogName.length ), 0 )
       for ( const md of mds ) {
         if ( hasErrors ( md ) ) continue
         if ( md.ignore && !all ) continue
         const ignore = all ? (md.ignore ? ' ignore' : '       ') : ''
-        process.stdout.write ( `${md.catalogName.padEnd ( maxFileLength )} ${md.sourceType.padEnd ( maxSourceType )}${ignore} from ${md.pathOffset}\n` )
+        process.stdout.write ( `${md.catalogName.padEnd ( maxCatalog )} ${md.sourceType.padEnd ( maxSourceType )}${ignore} from ${md.pathOffset}\n` )
       }
       displayErrors ( mds );
     } )
@@ -205,7 +206,7 @@ export function addLocationsCommand ( context: CommandContext ) {
     .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
     .option ( '-d, --debug', 'output extra debugging' )
     .option ( "--content", "show the content of the location files" )
-    .option ( "-n, --name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed" )
+    .option ( "-n, --name <name>", "A name is needed for the locations files. This can be provided from package.json, or pom.xml. But otherwise this is needed", 'demoName' )
     .option ( 'p, --policy <policy>', 'policy url' )
     .option ( '-t, --template <template>', 'the root template directory. Only use if you know what you are doing', templateDir )
     .action ( async ( opts ) => {
@@ -229,16 +230,16 @@ export function addLocationsCommand ( context: CommandContext ) {
 }
 
 export interface DocsData {
-  dir: string,
+  docsDir: string,
   dirExists: boolean,
   fileExists: boolean
 }
-async function findDocsData ( fileOps: FileOps, dir: string ): Promise<DocsData> {
-  const docsDir = path.join ( dir, 'docs' )
-  const mkdocs = path.join ( docsDir, 'mkdocs.yaml' )
+async function findDocsData ( fileOps: FileOps,rootDir: string, dir: string ): Promise<DocsData> {
+  const docsDir = path.join ( rootDir,dir, 'docs' )
+  const mkdocs = path.join ( rootDir,dir, 'mkdocs.yml' )
   const dirExists = await fileOps.isDirectory ( docsDir )
-  const fileExists = await fileOps.isFile ( docsDir )
-  return { dir: docsDir, dirExists, fileExists };
+  const fileExists = await fileOps.isFile ( mkdocs )
+  return {  docsDir, dirExists, fileExists };
 }
 export function addDocsCommands ( context: CommandContext ) {
   context.command.command ( "docs" )
@@ -252,9 +253,11 @@ export function addDocsCommands ( context: CommandContext ) {
       const { command, fileOps, currentDirectory } = context
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts, maxFileLength } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
+      console.log('Directory'.padEnd(maxFileLength), 'Dir'.padEnd(5), 'File'.padEnd(5))
+      console.log(''.padEnd(maxFileLength, '-'), ''.padEnd(5, '-'), ''.padEnd(5, '-'))
       for ( const { file } of ffts ) {
-        const { dir, dirExists, fileExists } = await findDocsData ( fileOps, path.dirname ( file ) );
-        console.log ( `${dir.padEnd ( maxFileLength )} ${dirExists.toString ().padEnd ( 5 )} ${fileExists.toString ().padEnd ( 5 )}` )
+        const { docsDir, dirExists, fileExists } = await findDocsData ( fileOps, dir,path.dirname ( file ) );
+        console.log ( `${path.dirname(file).padEnd ( maxFileLength )} ${dirExists.toString ().padEnd ( 5 )} ${fileExists.toString ().padEnd ( 5 )}` )
 
       }
     } )

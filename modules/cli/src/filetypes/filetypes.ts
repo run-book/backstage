@@ -1,4 +1,4 @@
-import { CatalogData, isCatalogData, isModuleDependency, ModuleData, ModuleDependency, SourceType } from "../module";
+import { CatalogData, isCatalogData, isModuleDependency, ModuleData, ModuleDataWithoutErrors, ModuleDependency, SourceType } from "../module";
 import { ErrorsAnd, flatMapK, hasErrors, mapK } from "@laoban/utils";
 import { FileOps } from "@laoban/fileops";
 import { applyCatalogTemplateForKind } from "../templates";
@@ -111,6 +111,9 @@ export async function findFilesAndFileType ( fileOps: FileOps, dir: string, fts:
   } );
 }
 
+export function withoutErrors(mds: ModuleData[] ): ModuleDataWithoutErrors[] {
+  return mds.filter ( md => !hasErrors ( md ) ) as ModuleDataWithoutErrors[]
+}
 export async function loadFiles ( fileOps: FileOps, policy: Policy, dir: string, fts: FileAndFileType[], debug?: boolean ): Promise<ModuleData[]> {
   return await Promise.all (
     fts.map ( async ( { file, ft } ) =>

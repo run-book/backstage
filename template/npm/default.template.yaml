@@ -9,7 +9,7 @@ metadata:
 <<tags>>
   annotations:
     backstage.io/source-location: <<scm>>
-  <<annotations>>
+<<annotations>>
 spec:
   type: <<spec.type|default(library)>>
   owner: <<owner>>
