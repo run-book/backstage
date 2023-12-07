@@ -28,63 +28,63 @@ look for a package.json.
 
 We should really have a three way chain: pom for a single jar, pom with modules, package.json...but that's for later.
 
-# Typeclass approach
+# Filetypes
 
 OK we want to point at a repo or monorepo. We want to spider it. And we know that there are many types of files there that
 hold structural data about components. We are majoring on
 * pom.xml
 * package.json
 
-There are others and we want it to be easy to add them, so we will use typeclasses.
+There are others and we want it to be easy to add them, so we will use filetypes. A strategy pattern
 
 Now we know the following:
 * For both package.json (workspaces) and pom.xml (modules) we can have multiple components with a parent/child relationship
 * It can potentially be a tree of components
 * The components are the leaf but data is aggregated as we go through the tree.
 
-But backstage to the rescue.
-* We know that we the idea of the entity name. 
-* In the case of a pom.xml we can use the groupId/artifactId. 
-* In the case of a package.json we can use the name.
-* The pom.xml has a parent. So it's easy to know if we have that already loaded.
-* The package.json might have workspaces. But it is not so obvious to see the parent child relatioship
-  * However workspaces must be under... so we can use the path and just assume the relatioship
-  * Later we can do proper matching
+Interestingly both package.json and pom.xml have a parent/child relationship. But they are different.
+So we have the idea of an 'ArrayHelper' generic that captures the way they can find their parents.
 
-Summary
-* Scan for files that match the typeclass criteria
-  * Gather the filename
-  * Gather raw metadata from the file. i.e. don't worry about parents yet
-    * This includes the path 
-    * This includes the name
-      * Note that package.json workspaces don't have a name...
-* Partition by type
-* For each type
-  * A map from path to metadata
-  * A map from name to metadata
-  * For each metadata of that type
-    * Turn it into an array of metadata
-    * The parents first, the file itself last
-      * parents are found from the two maps
-    * We can turn this array into a tree easily enough
-    * And we can turn the array into a dictionary easily enough
-  * From the tree we can decide the location files
-    * Anything that is a parent will get a location file of name `catalog-info.yaml`
-* We can now smash this array into a dictionary useful for a template.
-  * Note that options coming in from the command line can be added to the dictionary
-  * I am not sure the default logic around this...
+# Filenames
+We want the location files to be the primary ones. So they are called 'catalog-info.yaml'. But we also want to be able to
+have project files pointed by the location files we call those catalog.xxx.yaml. xxx is typically maven or npm.
+
+Because we often want hard coded yaml files (a component might be a library a service and declare an API) 
+we allow backstage.xxx.yml, where xxx is the type of the component.
 
 # What if two entities have the same path
 
-So for example there is a package.json and a pom.xml in the same directory. 
+Handled now by the catalog-info.xxx.yaml
 
-Well we really care about the catalog name with is `<path>/catalog-info.yaml` 
-so we just need to check that these are unique
+# How do we handle annotations and tags?
 
-Therefore files need to be able to override this. 
+## Tags
+For example we hardcode at the moment the tags 'npm', 'java', 'maven'. 
+but we want to be able to add more tags that are defined in pom.xml or package.json.
+
+We can do this by adding a 'backstage.tags' property to the pom.xml or package.json. This will be a comma separated lists of tags
+
+## Annotations
 
 
+### Documentation annotation
+OK there are some special cases. Like the documentation annotation. 
+It wouldn't be suprising if we wanted to add more of these special cases....
+```yaml
+  annotations:
+    backstage.io/techdocs-ref: dir:./docs
+```
+To get this we'll do 'backstage.techdocs' in the pom or package.json. This will be a path to the root of the documentation.
+If it exists this will be added to the annotations.
 
+Why do this instead of just the 'other annotations' below? Because it's more expressive and easier for other tools to understand.
 
+### Other annotations
+Specified in the pom or package.json. We'll go with comma separated lists again. Like tags.
+```xml
+<properties>
+    <backstage.annotations>key1: value1, key2: value2</backstage.annotations>
+</properties>
+```
 
-
+So that means we need to add in the documentation annotation to the other annotations. 

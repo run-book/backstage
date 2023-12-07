@@ -8,7 +8,10 @@
     <artifactId>javaoptics</artifactId>
     <version>1.5.10-SNAPSHOT</version>
   </parent>
-
+  <properties>
+    <backstage.techdocs>/docs</backstage.techdocs>
+    <backstage.annotations>key1: value1,   key2:   value2</backstage.annotations>
+  </properties>
   <artifactId>validation</artifactId>
 
   <dependencies>

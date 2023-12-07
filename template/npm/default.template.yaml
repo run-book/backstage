@@ -6,8 +6,10 @@ metadata:
   description: <<description>>
   tags:
     - npm
+<<tags>>
   annotations:
     backstage.io/source-location: <<scm>>
+  <<annotations>>
 spec:
   type: <<spec.type|default(library)>>
   owner: <<owner>>

@@ -5,10 +5,11 @@ metadata:
   name: laoban-config
   description: Laoban's configuration
   tags:
-    - java
     - npm
+
   annotations:
     backstage.io/source-location: Unknown scm
+  
 spec:
   type: library
   owner: phil-rice

@@ -5,10 +5,11 @@ metadata:
   name: laoban-validation
   description: A library for validating json
   tags:
-    - java
     - npm
+
   annotations:
     backstage.io/source-location: Unknown scm
+  
 spec:
   type: library
   owner: phil-rice

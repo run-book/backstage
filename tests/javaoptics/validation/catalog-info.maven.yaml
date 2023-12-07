@@ -7,10 +7,15 @@ metadata:
   tags:
     - java
     - maven
+    - optics
+    - fp
   annotations:
     backstage.io/source-location: https://github.com/phil-rice/javaoptics.git
     backstage.io/maven-group-id: one.xingyi
     backstage.io/maven-artifact-id: validation
+    backstage.io/techdocs-ref: /docs
+    key1: value1
+    key2:   value2
 spec:
   type: library
   owner: phil-rice

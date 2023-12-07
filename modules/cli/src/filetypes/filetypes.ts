@@ -43,7 +43,7 @@ function makeDictionaryPart ( existing: any, md: ModuleDependency ) {
     fullname: `${md.fullname}`,
     groupId: md.groupId ?? existing.groupId,
     artifactId: md.artifactId, // Note we DON't want to default artifact Id... we want an error
-    description: escapeStringForYaml( md.description ?? '...'), // Note we DON'T want to default description to the parent
+    description: escapeStringForYaml ( md.description ?? '...' ), // Note we DON'T want to default description to the parent
     scm: md.scm ?? existing.scm,
     kind: md.kind ?? existing.kind,
     dependsOn,
@@ -51,6 +51,17 @@ function makeDictionaryPart ( existing: any, md: ModuleDependency ) {
   }
 }
 
+function processAnnotations ( dic: any ) {
+  const docannotations = dic.techdocs ? [ `backstage.io/techdocs-ref: ${dic.techdocs}` ] : []
+  const others = toCSVList ( dic.annotations )
+  return [ ...docannotations, ...others ].map ( s => `    ${s}` ).join ( '\n' )
+}
+function toCSVList ( commaSeparatedList: string ) {
+  return (commaSeparatedList ?? '').split ( ',' ).map ( s => s.trim () ).filter ( s => s.length > 0 )
+}
+function toCSV ( commaSeparatedList: string ) {
+  return toCSVList ( commaSeparatedList ).map ( s => `    - ${s}` ).join ( '\n' );
+}
 export function makeDictionary ( defaults: any, mds: ModuleData[] ): any {
   let dic: any = { dependsOn: [], ...defaults }
   for ( const md of mds ) {
@@ -58,6 +69,8 @@ export function makeDictionary ( defaults: any, mds: ModuleData[] ): any {
     if ( isModuleDependency ( md ) ) dic = makeDictionaryPart ( dic, md )
   }
   dic.dependsOn = dic.dependsOn.length === 0 ? '' : 'dependsOn: \n' + dic.dependsOn.join ( '\n' )
+  dic.tags = toCSV ( dic.tags )
+  dic.annotations = processAnnotations ( dic )
   return dic
 }
 

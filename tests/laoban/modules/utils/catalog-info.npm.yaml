@@ -5,10 +5,11 @@ metadata:
   name: laoban-utils
   description: Those miscellaneous utilities and types that every project needs
   tags:
-    - java
     - npm
+
   annotations:
     backstage.io/source-location: Unknown scm
+  
 spec:
   type: library
   owner: phil-rice

@@ -7,10 +7,12 @@ metadata:
   tags:
     - java
     - maven
+<<tags>>
   annotations:
     backstage.io/source-location: <<scm>>
     backstage.io/maven-group-id: <<groupId>>
     backstage.io/maven-artifact-id: <<artifactId>>
+<<annotations>>
 spec:
   type: <<spec.type|default(library)>>
   owner: <<owner>>

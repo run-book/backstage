@@ -5,10 +5,11 @@ metadata:
   name: laoban-variables
   description: A library that can dereference variables in strings
   tags:
-    - java
     - npm
+
   annotations:
     backstage.io/source-location: Unknown scm
+  
 spec:
   type: library
   owner: phil-rice
