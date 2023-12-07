@@ -9,6 +9,8 @@ import { loadPolicy } from "./policy";
 import { loadTemplateAndMakeLocationFiles, makeLocationFiles } from "./locations";
 import { templateDir } from "./templates";
 import { listFilesRecursively } from "./file.search";
+import path from "path";
+import { FileOps } from "@laoban/fileops";
 
 
 export function addDataCommand ( context: CommandContext ) {
@@ -226,6 +228,37 @@ export function addLocationsCommand ( context: CommandContext ) {
     } )
 }
 
+export interface DocsData {
+  dir: string,
+  dirExists: boolean,
+  fileExists: boolean
+}
+async function findDocsData ( fileOps: FileOps, dir: string ): Promise<DocsData> {
+  const docsDir = path.join ( dir, 'docs' )
+  const mkdocs = path.join ( docsDir, 'mkdocs.yaml' )
+  const dirExists = await fileOps.isDirectory ( docsDir )
+  const fileExists = await fileOps.isFile ( docsDir )
+  return { dir: docsDir, dirExists, fileExists };
+}
+export function addDocsCommands ( context: CommandContext ) {
+  context.command.command ( "docs" )
+    .description ( "Scans for directories under the projects that are 'docs' and have the 'mkdoc.yaml' in them" )
+    .option ( '-f, --fileTypes <fileTypes...>', 'comma separated list of file types to scan', [] )
+    .option ( '-d, --debug', 'output extra debugging' )
+    .action ( async ( opts ) => {
+      const { fileTypes, debug, content, all, policy, template, name } = opts
+      const fts = filterFileTypes ( context.fileTypes, opts.fileTypes )
+      if ( debug ) console.log ( 'fileTypes', fts.map ( ft => ft.sourceType ) )
+      const { command, fileOps, currentDirectory } = context
+      const dir = command.optsWithGlobals ().directory ?? currentDirectory
+      const { ffts, maxFileLength } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
+      for ( const { file } of ffts ) {
+        const { dir, dirExists, fileExists } = await findDocsData ( fileOps, path.dirname ( file ) );
+        console.log ( `${dir.padEnd ( maxFileLength )} ${dirExists.toString ().padEnd ( 5 )} ${fileExists.toString ().padEnd ( 5 )}` )
+
+      }
+    } )
+}
 export function addDebugCommands ( context: CommandContext ) {
   const command: Command = context.command.command ( 'debug' ).description ( 'commands help resolve issues' )
   const newContext: CommandContext = { ...context, command }
@@ -237,4 +270,5 @@ export function addDebugCommands ( context: CommandContext ) {
   addListCommand ( newContext );
   addLocationsCommand ( newContext );
   addNukeCommand ( newContext );
+  addDocsCommands ( newContext );
 }
