@@ -52,7 +52,7 @@ function makeDictionaryPart ( existing: any, md: ModuleDependency ) {
 }
 
 function processAnnotations ( dic: any ) {
-  const docannotations = dic.techdocs ? [ `backstage.io/techdocs-ref: ${dic.techdocs}` ] : []
+  const docannotations = dic.techdocs ? [ `backstage.io/techdocs-ref: dir:${dic.techdocs}` ] : []
   const others = toCSVList ( dic.annotations )
   return [ ...docannotations, ...others ].map ( s => `    ${s}` ).join ( '\n' )
 }
