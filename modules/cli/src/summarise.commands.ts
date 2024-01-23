@@ -50,13 +50,14 @@ export function addSummariseCommand ( context: CommandContext ) {
     .description ( "Make a json summary describing software catalogs and (not yet)docs on the standard output. Directory defaults to ." )
     .option ( "-o,--owner <owner>", "owner of the repository. This is included in the summary info but has no other purpose" )
     .option ( '-p, --project <project>', 'project of the repository. This is included in the summary info but has no other purpose' )
+    .option ( '-n, --name <name>', 'name of the repository. This is included in the summary info but has no other purpose' )
     .option ( '-e, --enabled', 'Is this enabled. This is included in the summary info, but has no other purpose' )
     .option ( '-y, --yamls', 'just lists all yaml files' )
     .option ( '-l, --list', 'just lists the software catalogs and the documents (for debugging usually)' )
     .action ( async ( directory, opts ) => {
       const dir = directory || context.currentDirectory
       console.log ( 'directory', dir )
-      const { debug, yamls, list, owner, project, enabled } = opts
+      const { debug, yamls, list, owner, project, name, enabled } = opts
       const yamlFiles = await findYamls ( context.fileOps, dir )
       if ( yamls ) {
         console.log ( 'yamls', yamlFiles )
@@ -70,7 +71,7 @@ export function addSummariseCommand ( context: CommandContext ) {
         return
       }
       const catalogs = makeRepoSummary ( catalogData );
-      const result = { owner, project, enabled, catalogs }//will add docs later when have clear idea what they look like
+      const result = { owner, project, name, enabled, catalogs }//will add docs later when have clear idea what they look like
       console.log ( JSON.stringify ( result, undefined, 2 ) )
     } )
 }

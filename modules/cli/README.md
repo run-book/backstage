@@ -9,7 +9,7 @@ It then summarises the information in the catalog files and outputs it as a json
 
 Example Usage
 ```shell
-backstage summarise --owner SomeOwner --project SomeProject --enabled
+backstage summarise --owner SomeOwner --project SomeProject --name SomeName --enabled
 ```
 Produces in the standard output this. Note that --owner, --project and --enabled are optional. By default enabled is undefined
 
@@ -17,7 +17,8 @@ Produces in the standard output this. Note that --owner, --project and --enabled
 {
   "owner":    "SomeOwner",
   "project":  "SomeProject",
-  "enabled": true,
+  "name": "SomeName",
+  "enabled":  true,
   "catalogs": {
     "all":       [.. a list of all catalog files ...],
     "apis":      [.. a list of all catalog files that are defining API ...],
