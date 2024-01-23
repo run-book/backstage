@@ -7,18 +7,18 @@ find the catalog files (anything with a `.yaml` extension and a `apiVersion`)
 
 It then summarises the information in the catalog files and outputs it as a json file.
 
-Example output
-
+Example Usage
 ```shell
-backstage --owner SomeOwner --project SomeProject
+backstage summarise --owner SomeOwner --project SomeProject --enabled
 ```
-Produces in the standard output this. Note that --owner and --project are optional
+Produces in the standard output this. Note that --owner, --project and --enabled are optional. By default enabled is undefined
 
 ```json
 {
-  "owner":   "SomeOwner",
-  "project": "SomeProject",
-  "repos":   {
+  "owner":    "SomeOwner",
+  "project":  "SomeProject",
+  "enabled": true,
+  "catalogs": {
     "all":       [.. a list of all catalog files ...],
     "apis":      [.. a list of all catalog files that are defining API ...],
     "services":  [.. a list of all catalog files that are defining services ...],
