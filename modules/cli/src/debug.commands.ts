@@ -3,7 +3,7 @@ import { Command } from "commander";
 import { fileTypeFromMd, filterFileTypes, isModuleDependencyFileType, justModuleDependenciesForFtWithLocalDeps, loadFiles, makeDictionary, withoutErrors } from "./filetypes/filetypes";
 import { flatMapK, hasErrors } from "@laoban/utils";
 import { CatalogData, debugStringForMd, displayErrors, isCatalogData, isModuleDependency, ModuleData, moduleDataPath, ModuleDataWithoutErrors } from "./module";
-import { loadFilesAndFilesTypesForDisplay } from "./commands";
+import { loadFilesAndFilesTypesForDisplay } from "./make.commands";
 import { makeTreeFromPathFnAndArray, treeToString } from "./tree";
 import { loadPolicy } from "./policy";
 import { loadTemplateAndMakeLocationFiles, makeLocationFiles } from "./locations";

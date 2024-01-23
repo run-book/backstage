@@ -1,7 +1,7 @@
 {
   "name": "@runbook/backstage",
   "description": "A cli for backstage tools",
-  "version": "0.1.19",
+  "version": "0.1.24",
   "main": "dist/index",
   "types": "dist/index",
   "bin": {
@@ -22,16 +22,18 @@
   "dependencies": {
     "fs-extra": "^9.0.1",
     "commander": "^10.0.0",
-    "@laoban/utils": "1.4.31",
-    "@laoban/fileops": "1.4.31",
-    "@laoban/filesops-node": "1.4.31",
-    "@laoban/variables": "1.4.31",
+    "@laoban/utils": "1.4.35",
+    "@laoban/fileops": "1.4.35",
+    "@laoban/filesops-node": "1.4.35",
+    "@laoban/variables": "1.4.35",
     "xml2js": "^0.6.2",
+    "js-yaml": "^4.1.0",
     "debug": "^4.3.4"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.5",
     "@types/xml2js": "^0.4.14",
+    "@types/js-yaml": "4.0.9",
     "eslint": "^8.52.0",
     "typescript": "^5.2.2",
     "jest": "29.1.1",

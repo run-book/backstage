@@ -9,15 +9,17 @@
     "dependencies":    {
       "fs-extra":              "^9.0.1",
       "commander":             "^10.0.0",
-      "@laoban/utils":         "1.4.31",
-      "@laoban/fileops":       "1.4.31",
-      "@laoban/filesops-node": "1.4.31",
-      "@laoban/variables":     "1.4.31",
-      "xml2js":                "^0.6.2"
+      "@laoban/utils":         "1.4.35",
+      "@laoban/fileops":       "1.4.35",
+      "@laoban/filesops-node": "1.4.35",
+      "@laoban/variables":     "1.4.35",
+      "xml2js":                "^0.6.2",
+      "js-yaml":               "^4.1.0"
     },
     "devDependencies": {
       "@types/fs-extra": "^9.0.5",
-      "@types/xml2js":   "^0.4.14"
+      "@types/xml2js":   "^0.4.14",
+      "@types/js-yaml":  "4.0.9"
     },
     "keywords":        [
       "github",

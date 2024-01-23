@@ -15,7 +15,9 @@ export function nameToArtifact ( fullname: string, version: string ): Artifact {
   return split?.length !== 2 ? { ...common, groupId: '', artifactId: fullname } : { ...common, groupId: split[ 0 ], artifactId: split[ 1 ] };
 }
 export function extractScm ( npm: any ) {
-  const repository = npm.repository?.url ?? npm.repository?.directory ?? npm.repository?.git ?? 'Unknown scm'
+  const repositoryObject = npm.repository
+  if (typeof repositoryObject === 'string') return repositoryObject
+  const repository = npm.repository?.url ?? npm.repository?.directory ?? npm.repository?.git ?? undefined
   return repository
 }
 export function extractArtifactsFromNpmDependency ( dep: NameAnd<string> ): Artifact[] {

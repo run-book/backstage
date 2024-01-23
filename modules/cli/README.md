@@ -1,8 +1,40 @@
 This is a CLI tool that is being used to experiment with Spotify's backstage
 
-It can scan a pom.xml file and generate a backstage catalog for it. 
+# the summarise command
 
-# Scope
+This is intended for CI/CD pipelines. It will scan a directory recursively
+find the catalog files (anything with a `.yaml` extension and a `apiVersion`)
+
+It then summarises the information in the catalog files and outputs it as a json file.
+
+Example output
+
+```shell
+backstage --owner SomeOwner --project SomeProject
+```
+Produces in the standard output this. Note that --owner and --project are optional
+
+```json
+{
+  "owner":   "SomeOwner",
+  "project": "SomeProject",
+  "repos":   {
+    "all":       [.. a list of all catalog files ...],
+    "apis":      [.. a list of all catalog files that are defining API ...],
+    "services":  [.. a list of all catalog files that are defining services ...],
+    "libraries": [.. a list of all catalog files that are defining libraries ...],
+    "errors":    [{"file": "somefile.yaml", "error": "some error message because we couldn't parse the file"}]
+  }
+}
+```
+
+Later this will updated to include information about documents
+
+```shell
+
+# the make command
+It can scan a pom.xml file and generate a backstage catalog for it.
+
 It scans a directory recursively looking for filetypes:
 * pom.xml - which can have modules in them (or not)
 * package.json - which can have workspaces in them (or not)
@@ -37,36 +69,45 @@ Currently the most common properties are:
     <backstage.techdocs>/path/to/where/mkdocs.yml is.</backstage.techdocs> 
 </properties>
 ```
+
 * `backstage.kind` Which template is used. If not found it uses the default template.
-* `backstage.ignore` Whether the module is ignored. This is typically used in modules that are just tests or not published
+* `backstage.ignore` Whether the module is ignored. This is typically used in modules that are just tests or not
+  published
 * `backstage.spec` What type of component are you? The default is library. But you can be a service or an API.
 * `tags` Used to give the component tags
 * `annotations` Used to give the component annotations
 * `techdocs` Used to point to the root of the documentation. Typically this is just `.`
 
 # adding info to package.json
+
 The properties are the same as for pom.xml except that they are provided as follows
+
 ```json
 {
   "backstage": {
-    "kind": "API",
-    "ignore": true,
-    "spec": { "type": "Service" },
-    "tags": "tag1,tag2",
+    "kind":        "API",
+    "ignore":      true,
+    "spec":        {"type": "Service"},
+    "tags":        "tag1,tag2",
     "annotations": "key1: value1, key2: value2",
-    "techdocs": "/path/to/where/mkdocs.yml is."
+    "techdocs":    "/path/to/where/mkdocs.yml is."
   }
 }
 ```
 
 # Properties and parents and so on
-If a `pom.xml` has a parent that is part of the current 'scan' then the properties are inherited. Same with `package.json` and workspaces.
 
-This is useful for such things as the `repository` property. If you have a parent pom.xml that defines the scm, or a parent package.json that defines the repository
+If a `pom.xml` has a parent that is part of the current 'scan' then the properties are inherited. Same
+with `package.json` and workspaces.
+
+This is useful for such things as the `repository` property. If you have a parent pom.xml that defines the scm, or a
+parent package.json that defines the repository
 then you don't need to repeat it in the child pom.xml or package.json
 
 # Examples of use
-If you have a repo or mono-repo with one or more pom.xml or package.json files then you can use this tool to generate the catalog-info.yaml files.
+
+If you have a repo or mono-repo with one or more pom.xml or package.json files then you can use this tool to generate
+the catalog-info.yaml files.
 It will add in the dependencies between 'local' modules (i.e. the ones under the directory that you are scanning).
 
 ```shell
@@ -75,15 +116,19 @@ backstage catalog make --owner nameOfTheOwner
 backstage catalog make --owner nameOfTheOwner -d /path/to/where/the/pom.xml/files/are
 
 ```
-If you get an error like the following, it means that you have a module that doesn't have a name. Typically this would be a `package.json` file
-that is the root of `yarn workspaces`. To fix this you can add a name to the `package.json` file or use the `--name someName` option to the command line. 
+
+If you get an error like the following, it means that you have a module that doesn't have a name. Typically this would
+be a `package.json` file
+that is the root of `yarn workspaces`. To fix this you can add a name to the `package.json` file or use
+the `--name someName` option to the command line.
+
 ```shell
 Errors
 No name for xxx
 No name for root
 ```
 
-# installation 
+# installation
 
 ```sh
 npm install -g @runbook/backstage
@@ -101,36 +146,45 @@ backstage catalog make --name Rest2 --owner phil-rice -l production
 The debug menu is mostly to help the developers of the cli tool. However it has some useful things for anyone
 
 ## Nuke
-If you want to get rid of all the autogenerated files then you can use the nuke command. This removes all .yaml files that have # Autogeneated at the start
+
+If you want to get rid of all the autogenerated files then you can use the nuke command. This removes all .yaml files
+that have # Autogeneated at the start
+
 ```shell
 backstage debug nuke 
 ```
 
 ## files
-Shows all the catalog-info.npm.yaml  and catalog-info.maven.yaml files that would be generated.
+
+Shows all the catalog-info.npm.yaml and catalog-info.maven.yaml files that would be generated.
 
 ```shell 
 backstage debug files
 ```
 
 ## locations
-This is the mirror of `debug files`. It just shows the location files that would be generated. i.e. the catalog-info.yaml that points to the files  
+
+This is the mirror of `debug files`. It just shows the location files that would be generated. i.e. the
+catalog-info.yaml that points to the files  
 shown by `debug files`
 
 ```shell
 backstage debug locations
 backstage debug locations --content
 ```
+
 With --content you can see the content of the files
 
-
 ## arrays
-This is about the parent child relationships between `pom.xml` or `package.json`. 
+
+This is about the parent child relationships between `pom.xml` or `package.json`.
+
 ```shell
 backstage debug arrays
 ```
 
 ## docs
+
 Seaches for subdirectories of the main project directories called 'docs' and the files 'mkdocs.yml'.
 This is just for information. To add the docs you need to modify the `pom.xml` or `package.json` file.
 
@@ -139,7 +193,9 @@ backstage debug docs
 ```
 
 ## vars
-If you are making and debugging your own templates, then you might want to see what are the 'variables' that the template has access to. I find it helpful to pipe
+
+If you are making and debugging your own templates, then you might want to see what are the 'variables' that the
+template has access to. I find it helpful to pipe
 this to a file and then look at that file in a text editor
 
 ```shell
@@ -147,5 +203,6 @@ backstage debug vars
 ```
 
 ## other debug commands
+
 Are very low level commands that are mostly only useful to the core developers of the cli
 
