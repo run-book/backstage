@@ -1,6 +1,6 @@
 {
   "name": "@laoban/xml",
-  "description": "",
+  "description": "kjh",
   "version": "1.4.31",
   "main": "dist/index",
   "types": "dist/index",
@@ -36,5 +36,8 @@
   "scripts": {
     "test": "jest --config jest.config.json",
     "test:watch": "npm run test -- --watch"
+  },
+  "backstage": {
+    "tags": "tag1,tag2"
   }
 }

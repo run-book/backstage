@@ -1,6 +1,6 @@
 This is a CLI tool that is being used to experiment with Spotify's backstage
 
-# the summarise command
+# The summarise command
 
 This is intended for CI/CD pipelines. It will scan a directory recursively
 find the catalog files (anything with a `.yaml` extension and a `apiVersion`)
@@ -31,9 +31,8 @@ Produces in the standard output this. Note that --owner, --project and --enabled
 
 Later this will updated to include information about documents
 
-```shell
+# The make command
 
-# the make command
 It can scan a pom.xml file and generate a backstage catalog for it.
 
 It scans a directory recursively looking for filetypes:
