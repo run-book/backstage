@@ -9,10 +9,10 @@
     "dependencies":    {
       "fs-extra":              "^9.0.1",
       "commander":             "^10.0.0",
-      "@laoban/utils":         "1.4.35",
-      "@laoban/fileops":       "1.4.35",
-      "@laoban/filesops-node": "1.4.35",
-      "@laoban/variables":     "1.4.35",
+      "@laoban/utils":         "1.4.40",
+      "@laoban/fileops":       "1.4.40",
+      "@laoban/filesops-node": "1.4.40",
+      "@laoban/variables":     "1.4.40",
       "xml2js":                "^0.6.2",
       "js-yaml":               "^4.1.0"
     },

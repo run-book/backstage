@@ -8,6 +8,7 @@ import { alLFileTypes } from "./src/filetypes/allFileTypes";
 import { addDebugCommands } from "./src/debug.commands";
 import { addCommands } from "./src/make.commands";
 import { addSummariseCommand } from "./src/summarise.commands";
+import { addRollupCommand } from "./src/rollup.commands";
 
 const fetch = require ( 'node-fetch' );
 
@@ -33,5 +34,6 @@ const context: CommandContext = { command: program, fileOps, currentDirectory: p
 addDebugCommands ( context )
 addCommands ( context )
 addSummariseCommand ( context )
+addRollupCommand ( context )
 
 const parsed = program.parseAsync ( process.argv );
