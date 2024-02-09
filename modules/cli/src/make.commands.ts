@@ -51,6 +51,6 @@ export function addMakeCommand ( context: CommandContext ) {
       displayErrors ( all );
     } )
 }
-export function addCommands ( context: CommandContext ) {
+export function addMakeCommands ( context: CommandContext ) {
   addMakeCommand ( context );
 }

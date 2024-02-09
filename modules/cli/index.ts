@@ -6,9 +6,9 @@ import { FileOps } from "@laoban/fileops";
 import { CommandContext } from "./src/context";
 import { alLFileTypes } from "./src/filetypes/allFileTypes";
 import { addDebugCommands } from "./src/debug.commands";
-import { addCommands } from "./src/make.commands";
+import { addMakeCommands } from "./src/make.commands";
 import { addSummariseCommand } from "./src/summarise.commands";
-import { addRollupCommand } from "./src/rollup.commands";
+import { addRollupCommands } from "./src/rollup.commands";
 
 const fetch = require ( 'node-fetch' );
 
@@ -32,8 +32,8 @@ const program: Command = require ( 'commander' )
 const fileOps: FileOps = fileOpsNode ()
 const context: CommandContext = { command: program, fileOps, currentDirectory: process.cwd (), fileTypes: alLFileTypes }
 addDebugCommands ( context )
-addCommands ( context )
+addMakeCommands ( context )
 addSummariseCommand ( context )
-addRollupCommand ( context )
+addRollupCommands ( context )
 
 const parsed = program.parseAsync ( process.argv );
