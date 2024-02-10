@@ -1,11 +1,10 @@
 import { CommandContext } from "./context";
-import { HasErrors, mapErrorsListK } from "./error.monad";
+import { HasErrors } from "./error.monad";
 import { NameAnd } from "@laoban/utils";
 import { HasUrl, LinesAndJsonAnd } from "./azure/lines.and";
 import { parsePairOnLine, Parser } from "./azure/parser";
-import { AzureDetails, azureDetails, projectDefn2RepoFiles, statDefns, stats, walkAllRepoAndEnabled, walkAllStateDefns, walkAllStateDefnsFromProject, walkAllStats, walkAllStatsFromProject, walkProjectDefns, walkProjectDefnsFromProject, walkProjectList } from "./azure/azure.domain";
+import { azureDetails, walkAllRepoAndEnabled, walkAllStateDefns, walkAllStateDefnsFromProject, walkAllStats, walkAllStatsFromProject, walkProjectDefns, walkProjectDefnsFromProject } from "./azure/azure.domain";
 import { Command } from "commander";
-import { addArraysCommand, addDataCommand, addDocsCommands, addFilesCommand, addListCommand, addLocationsCommand, addNukeCommand, addTemplateVarsCommand, addTreesCommands } from "./debug.commands";
 
 
 export interface ProjectDefn extends HasUrl, ProjectAndOwner {
@@ -100,5 +99,4 @@ export function addRollupCommands ( context: CommandContext ) {
   const newContext: CommandContext = { ...context, command }
   addRollupAllCommand ( newContext );
   addRollUpProjectCommand ( newContext );
-
 }

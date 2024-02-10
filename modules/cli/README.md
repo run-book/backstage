@@ -147,6 +147,16 @@ This command gathers all the `stats.txt` files  and puts them into a json struct
 
 The purpose of this is to allow stats to be places in the individual repos and then gathered together in a central place. 
 
+# The fileApi command
+
+This is a simple command that turns serves the files in the current directory (and below) as an API. It is intended to be used
+in a CI/CD pipeline when validating the `catalog-info.yaml` files. It is needed because the backstage api can only 
+accept a url for a location and during the CI/CD pipeline we don't have a url for the location without this.
+
+```shell 
+
+```shell
+
 # installation
 
 ```sh

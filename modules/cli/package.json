@@ -1,7 +1,7 @@
 {
   "name": "@runbook/backstage",
   "description": "A cli for backstage tools",
-  "version": "0.2.9",
+  "version": "0.2.11",
   "main": "dist/index",
   "types": "dist/index",
   "bin": {
@@ -26,6 +26,8 @@
     "@laoban/fileops": "1.4.40",
     "@laoban/filesops-node": "1.4.40",
     "@laoban/variables": "1.4.40",
+    "@runbook/koa": "0.3.11",
+    "@runbook/utils": "0.3.11",
     "xml2js": "^0.6.2",
     "js-yaml": "^4.1.0",
     "debug": "^4.3.4"

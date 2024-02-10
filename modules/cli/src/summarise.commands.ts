@@ -46,7 +46,7 @@ function makeRepoSummary ( catalogs: Awaited<{ file: string; yaml: any } | { fil
   return { all, apis, errors, libraries, services };
 }
 export function addSummariseCommand ( context: CommandContext ) {
-  context.command.command ( "summarise [directory[" )
+  context.command.command ( "summarise [directory]" )
     .description ( "Make a json summary describing software catalogs and (not yet)docs on the standard output. Directory defaults to ." )
     .option ( "-o,--owner <owner>", "owner of the repository. This is included in the summary info but has no other purpose" )
     .option ( '-p, --project <project>', 'project of the repository. This is included in the summary info but has no other purpose' )

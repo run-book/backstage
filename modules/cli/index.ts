@@ -9,6 +9,8 @@ import { addDebugCommands } from "./src/debug.commands";
 import { addMakeCommands } from "./src/make.commands";
 import { addSummariseCommand } from "./src/summarise.commands";
 import { addRollupCommands } from "./src/rollup.commands";
+import { addFileApiCommand } from "./src/api/api.commands";
+import { addListCatalogsCommand } from "./src/validate/validation.commands";
 
 const fetch = require ( 'node-fetch' );
 
@@ -35,5 +37,7 @@ addDebugCommands ( context )
 addMakeCommands ( context )
 addSummariseCommand ( context )
 addRollupCommands ( context )
+addFileApiCommand ( context )
+addListCatalogsCommand ( context )
 
 const parsed = program.parseAsync ( process.argv );
