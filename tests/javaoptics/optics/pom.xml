@@ -11,7 +11,7 @@
 
   <artifactId>optics</artifactId>
   <properties>
-    <backstage.kind>API</backstage.kind>
+<!--    <backstage.kind>API</backstage.kind>-->
   </properties>
   <dependencies>
     <dependency>
