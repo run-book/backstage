@@ -94,10 +94,12 @@ export function addValidateCatalogsCommand ( context: CommandContext ) {
         const result = await postAndValidate ( backstageUrl, context.fetch, headers, detail )
         return { catalog: detail.catalog, ...result }
       } )
+      const errors = fetches.filter ( f => f.status >= 400 );
       if ( errorsonly )
-        console.log ( JSON.stringify ( fetches.filter ( f => f.status >= 400 ), null, 2 ) )
+        console.log ( JSON.stringify ( errors, null, 2 ) )
       else
         console.log ( JSON.stringify ( fetches, null, 2 ) )
+      if ( errors.length > 0 ) process.exit ( 1 )
     } )
 }
 
