@@ -56,8 +56,8 @@ export function addSummariseCommand ( context: CommandContext ) {
     .option ( '-l, --list', 'just lists the software catalogs and the documents (for debugging usually)' )
     .action ( async ( directory, opts ) => {
       const dir = directory || context.currentDirectory
-      console.log ( 'directory', dir )
       const { debug, yamls, list, owner, project, repo, enabled } = opts
+      if (debug)console.log('dir',dir)
       const yamlFiles = await findYamls ( context.fileOps, dir )
       if ( yamls ) {
         console.log ( 'yamls', yamlFiles )

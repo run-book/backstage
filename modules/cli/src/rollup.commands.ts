@@ -36,11 +36,12 @@ export function addAzureOptions ( command: Command ) {
   return command.option ( "-t,--token_var <token-env-name>", "The environment variable holding the token", "SYSTEM_ACCESSTOKEN" )
     .option ( "-o, --organisation <organisation>", "The azure devops organisation" )
     .option ( "--projects-file <projectsFile>", "The file in the core repo that holds the list of projects", 'projects.txt' )
-    .option ( "-r,--repos-file <reposFile>", "The file in the onboarded projects that holds the list of repos", 'repos.txt' )
+    .option ( "--repos-file <reposFile>", "The file in the onboarded projects that holds the list of repos", 'repos.txt' )
     .option ( "-s,--stats-file <statsFile>", "The file in the onboarded repo that holds the stats", 'stats.txt' )
     .option ( '--backstage-pattern <projectPattern>', 'How we get the list of projects file. Allowed: ${organisation}' )
     .option ( '--project-pattern <projectPattern>', 'How we get the list of repos file. Allowed ${organisation} ${project}' )
     .option ( '--stats-pattern <statsPattern>', 'How we get the stat file. Allowed ${organisation} ${project} ${repo}' )
+    .option ( '--debug', 'A little debug info' )
 }
 
 export function addRollUpProjectCommand ( context: CommandContext ) {
@@ -68,6 +69,7 @@ export function addRollupAllCommand ( context: CommandContext ) {
   const fileOps = context.fileOps
   addAzureOptions ( context.command.command ( "all " ).description ( "Gathers all stats from every project and repo." ) )
     .option ( "-p, --project <project>", "The azure devops root project " )
+    .option ( "-r, --repo <repo>", "The azure devops repo name that holds the list of projects and whether they are enabled" )
     .option ( '--listProjects', 'Debug: list the projects and owners and url of the repos file in those projects' )
     .option ( '--listRepos', 'Lists project/owner/repo and project/enabled in the projects' )
     .option ( '--listStatFiles', 'Lists the stats files in the projects ' )

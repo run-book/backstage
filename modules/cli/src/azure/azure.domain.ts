@@ -33,7 +33,8 @@ export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>
   const reposFile = opts.reposFile || env.AZURE_REPOS_FILE || 'repos.txt';
   const statsFile = opts.statsFile || env.AZURE_STATS_FILE || 'stats.txt';
   const dic = { organisation, project, repo, projectsFile, reposFile, statsFile };
-  return {
+  const debug = opts.debug
+  const result = {
     fileOps: realFileOps,
     dic,
     organisation: organisation,
@@ -45,7 +46,9 @@ export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>
     projectPattern: opts.projectPattern || env.AZURE_PROJECT_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${repo}/items?path=${projectsFile}&api-version=6.0',
     reposPattern: opts.reposPattern || env.AZURE_REPOS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${repo}/items?path=${reposFile}&api-version=6.0',
     statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${repo}/items?path=${statsFile}&api-version=6.0'
-  }
+  };
+  if ( debug ) console.log ( `AzureDetails: ${JSON.stringify ( result , null, 2)}` )
+  return result
 }
 
 export function rootFile ( azure: AzureDetails ) {
