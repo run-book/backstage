@@ -10,7 +10,9 @@ import { jsonParser } from "./parser";
 export interface AzureDetails {
   organisation: string
   project: string
-  repo: string
+  rootRepo: string
+  projectRootRepo: string
+  statsRepoPattern: string
   projectsFile: string
   reposFile: string
   statsFile: string
@@ -19,6 +21,7 @@ export interface AzureDetails {
   statsPattern: string
   fileOps: FileOps
   dic: any
+  debug: boolean
 }
 
 export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>, project?: string ): AzureDetails {
@@ -28,26 +31,31 @@ export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>
   const token = env[ tokenVar ]
   if ( !token ) throw new Error ( `Environment variable for azure PAT token [${tokenVar}] not present` )
   const realFileOps = withHeaders ( fileOps, { Authorization: `Basic ${(btoa ( `:${token}` ))}` } )
-  const repo = opts.repo || env.AZURE_REPO || 'DevHub'
+  const rootRepo = opts.rootRepo || env.AZURE__ROOT_REPO || 'DevHub'
+  const projectRootRepo = opts.projectRootRepo || env.AZURE_PROJECT_REPO || 'DevHub'
+  const statsRepoPattern = opts.statsRepoPattern || env.AZURE_STATS_REPO_PATTERN || '${repo}'
   const projectsFile = opts.projectsFile || env.AZURE_PROJECTS_FILE || 'projects.txt';
   const reposFile = opts.reposFile || env.AZURE_REPOS_FILE || 'repos.txt';
   const statsFile = opts.statsFile || env.AZURE_STATS_FILE || 'stats.txt';
-  const dic = { organisation, project, repo, projectsFile, reposFile, statsFile };
+  const dic = { organisation, project, rootRepo, projectRootRepo, projectsFile, reposFile, statsFile };
   const debug = opts.debug
   const result = {
+    debug,
     fileOps: realFileOps,
     dic,
     organisation: organisation,
-    project: project,
-    repo,
+     project,
+    rootRepo,
+    projectRootRepo,
+    statsRepoPattern,
     projectsFile,
-    reposFile: reposFile,
-    statsFile: statsFile,
-    projectPattern: opts.projectPattern || env.AZURE_PROJECT_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${repo}/items?path=${projectsFile}&api-version=6.0',
-    reposPattern: opts.reposPattern || env.AZURE_REPOS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${repo}/items?path=${reposFile}&api-version=6.0',
-    statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${repo}/items?path=${statsFile}&api-version=6.0'
+    reposFile,
+    statsFile,
+    projectPattern: opts.projectPattern || env.AZURE_PROJECT_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${rootRepo}/items?path=${projectsFile}&api-version=6.0',
+    reposPattern: opts.reposPattern || env.AZURE_REPOS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${projectRootRepo}/items?path=${reposFile}&api-version=6.0',
+    statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/'+ statsRepoPattern + '/items?path=${statsFile}&api-version=6.0'
   };
-  if ( debug ) console.log ( `AzureDetails: ${JSON.stringify ( result , null, 2)}` )
+  if ( debug ) console.log ( `AzureDetails: ${JSON.stringify ( result, null, 2 )}` )
   return result
 }
 
@@ -56,7 +64,9 @@ export function rootFile ( azure: AzureDetails ) {
 }
 
 const makeProjectDefn = ( azure: AzureDetails ) => ( defn: HasUrl, line: ProjectAndOwner ) => {
-  const url = derefence ( `repos file`, { ...azure.dic, ...line }, azure.reposPattern, { variableDefn: dollarsBracesVarDefn } )
+  const dic = { ...azure.dic, ...line };
+  const url = derefence ( `repos file`, dic, azure.reposPattern, { variableDefn: dollarsBracesVarDefn } )
+  if ( azure.debug ) console.log ( 'projectDefn url', url, 'dic', JSON.stringify ( dic, null, 2 ) );
   return { ...defn, ...line, url, json: undefined, lines: undefined }
 };
 export const projectListToProjectDefns = ( azure: AzureDetails ) => async ( pl: LinesAndJsonAnd<HasUrl, ProjectAndOwner[]> ): Promise<ProjectDefn[]> => {
@@ -69,7 +79,9 @@ export const projectDefn2RepoFiles = ( azure: AzureDetails ) => ( pd: ProjectDef
 
 export const statDefns = ( azure: AzureDetails ) => async ( pd: LinesAndJsonAnd<ProjectDefn, RepoAndEnabled[]> ): Promise<RepoDefn[]> =>
   pd.json.filter ( re => re.enabled.toLowerCase () === 'true' ).map ( ( re: RepoAndEnabled ) => {
-    const url = derefence ( `repos file`, { ...azure.dic, project: pd.project, ...re }, azure.statsPattern, { variableDefn: dollarsBracesVarDefn } )
+    const dic = { ...azure.dic, project: pd.project, ...re };
+    const url = derefence ( `repos file`, dic, azure.statsPattern, { variableDefn: dollarsBracesVarDefn } )
+    if ( azure.debug ) console.log ( 'statDefns url', url, 'dic', JSON.stringify ( dic, null, 2 ) );
     return { ...pd, ...re, url, json: undefined, lines: undefined }
   } );
 

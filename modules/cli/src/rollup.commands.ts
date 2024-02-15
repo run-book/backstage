@@ -36,6 +36,7 @@ export function addAzureOptions ( command: Command ) {
   return command.option ( "-t,--token_var <token-env-name>", "The environment variable holding the token", "SYSTEM_ACCESSTOKEN" )
     .option ( "-o, --organisation <organisation>", "The azure devops organisation" )
     .option ( "--projects-file <projectsFile>", "The file in the core repo that holds the list of projects", 'projects.txt' )
+    .option ( "-s, --stats-repo-pattern <statsRepoPattern>", 'A pattern (usually using ${repo} for the name of the repo holding the stats' )
     .option ( "--repos-file <reposFile>", "The file in the onboarded projects that holds the list of repos", 'repos.txt' )
     .option ( "-s,--stats-file <statsFile>", "The file in the onboarded repo that holds the stats", 'stats.txt' )
     .option ( '--backstage-pattern <projectPattern>', 'How we get the list of projects file. Allowed: ${organisation}' )
@@ -69,7 +70,8 @@ export function addRollupAllCommand ( context: CommandContext ) {
   const fileOps = context.fileOps
   addAzureOptions ( context.command.command ( "all " ).description ( "Gathers all stats from every project and repo." ) )
     .option ( "-p, --project <project>", "The azure devops root project " )
-    .option ( "-r, --repo <repo>", "The azure devops repo name that holds the list of projects and whether they are enabled" )
+    .option ( "-r, --rootRepo <rootRepo>", "The azure devops repo name that holds the list of projects and whether they are enabled" )
+    .option ( "-r, --projectRootRepo <projectRootRepo>", "The azure devops repo name in the team repo that holds the list of repos and whether they are enabled" )
     .option ( '--listProjects', 'Debug: list the projects and owners and url of the repos file in those projects' )
     .option ( '--listRepos', 'Lists project/owner/repo and project/enabled in the projects' )
     .option ( '--listStatFiles', 'Lists the stats files in the projects ' )
@@ -84,7 +86,7 @@ export function addRollupAllCommand ( context: CommandContext ) {
       if ( listStats ) return reportAndReturn ( sds )
 
       const data: NameAnd<NameAnd<any>> = {}
-      sds.forEach ( rd => {
+      sds.filter ( s => s.error === undefined ).forEach ( rd => {
         const project = rd.project;
         const projectJson = data[ project ] || {}
         projectJson[ rd.repo ] = rd.json
