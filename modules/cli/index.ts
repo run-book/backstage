@@ -11,6 +11,7 @@ import { addSummariseCommand } from "./src/summarise.commands";
 import { addRollupCommands } from "./src/rollup.commands";
 import { addFileApiCommand } from "./src/api/api.commands";
 import { addListCatalogsCommand, addValidateCommands } from "./src/validate/validation.commands";
+import { addMergeCommand } from "./src/merge.commands";
 
 const fetch = require ( 'node-fetch' );
 
@@ -34,10 +35,11 @@ const program: Command = require ( 'commander' )
 const fileOps: FileOps = fileOpsNode ()
 const context: CommandContext = { command: program, fileOps, currentDirectory: process.cwd (), fileTypes: alLFileTypes, fetch }
 addDebugCommands ( context )
-addMakeCommands ( context )
-addSummariseCommand ( context )
-addRollupCommands ( context )
 addFileApiCommand ( context )
+addMakeCommands ( context )
+addMergeCommand ( context )
+addRollupCommands ( context )
+addSummariseCommand ( context )
 addValidateCommands ( context )
 
 const parsed = program.parseAsync ( process.argv );

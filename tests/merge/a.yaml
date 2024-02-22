@@ -1,0 +1,7 @@
+a: "a from yaml"
+b:
+  - 5
+  - 6
+  - 7
+c:
+  f: "f from yaml"

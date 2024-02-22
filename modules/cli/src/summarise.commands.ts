@@ -73,6 +73,7 @@ export function addSummariseCommand ( context: CommandContext ) {
       const catalogs = makeRepoSummary ( catalogData );
       const result = { owner, project, repo, enabled, catalogs }//will add docs later when have clear idea what they look like
       console.log ( JSON.stringify ( result, undefined, 2 ) )
+
     } )
 }
 

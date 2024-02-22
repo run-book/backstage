@@ -96,6 +96,8 @@ export function addRollupAllCommand ( context: CommandContext ) {
         .map ( ( error, errorContext ) => ({ error, errorContext }) )
       const result = { good: data, errors }
       console.log ( JSON.stringify ( result, null, 2 ) )
+      if (errors.length>0)
+        process.exit(1)
     } )
 }
 export function addRollupCommands ( context: CommandContext ) {
