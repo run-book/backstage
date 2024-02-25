@@ -3,7 +3,7 @@ import { HasErrors } from "./error.monad";
 import { NameAnd } from "@laoban/utils";
 import { HasUrl, LinesAndJsonAnd } from "./azure/lines.and";
 import { parsePairOnLine, Parser } from "./azure/parser";
-import { azureDetails, walkAllRepoAndEnabled, walkAllStateDefns, walkAllStateDefnsFromProject, walkAllStats, walkAllStatsFromProject, walkProjectDefns, walkProjectDefnsFromProject } from "./azure/azure.domain";
+import { AzureDetails, azureDetails, walkAllRepoAndEnabled, walkAllStateDefns, walkAllStateDefnsFromProject, walkAllStats, walkAllStatsFromProject, walkProjectDefns, walkProjectDefnsFromProject } from "./azure/azure.domain";
 import { Command } from "commander";
 
 
@@ -37,7 +37,7 @@ export const parseProjectAndOwnerFromJSON: Parser<ProjectAndOwner[]> =
                s => {
                  const json: NameAnd<OwnerAndEnabled> = JSON.parse ( s )
                  if ( typeof json !== 'object' ) throw new Error ( `Expected an object got ${s}` )
-                 return Object.entries ( json ).filter ( ( [ _, details ] ) => details.enabled )
+                 return Object.entries ( json ).filter ( ( [ _, details ] ) => details.enabled === undefined? true: details.enabled )
                    .map ( ( [ project, oAndE ] ) => ({ project, owner: oAndE.owner }) )
                }
 
@@ -111,7 +111,7 @@ export function addRollupAllCommand ( context: CommandContext ) {
     .option ( '--listStats', 'Lists the stats in the projects ' )
     .action ( async ( opts ) => {
       const { listProjects, listRepos, listStatFiles, listStats } = opts
-      const azure = azureDetails ( context.fileOps, opts, process.env )
+      const azure: AzureDetails = azureDetails ( context.fileOps, opts, process.env )
       if ( listProjects ) return reportAndReturn ( await walkProjectDefns ( azure ) )
       if ( listRepos ) return reportAndReturn ( await walkAllRepoAndEnabled ( azure ) )
       if ( listStatFiles ) return reportAndReturn ( await walkAllStateDefns ( azure ) )
