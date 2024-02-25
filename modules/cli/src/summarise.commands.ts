@@ -1,6 +1,6 @@
 import { CommandContext } from "./context";
 import { FileOps } from "@laoban/fileops";
-import { defaultIgnoreFilter, scanDirectory } from "@laoban/fileops/dist/src/scan";
+import { defaultIgnoreFilter, scanDirectory } from "@laoban/fileops";
 import { load } from "js-yaml";
 
 

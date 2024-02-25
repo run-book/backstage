@@ -13,3 +13,4 @@ export const parsePairOnLine = <T> ( pairTo: PairTo<T> ): Parser<T[]> =>
       return pairTo ( parts[ 0 ], parts[ 1 ] )
     } )
   }
+

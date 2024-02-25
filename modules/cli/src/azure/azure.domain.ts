@@ -1,11 +1,10 @@
 import { NameAnd } from "@laoban/utils";
 import { FileOps, withHeaders } from "@laoban/fileops";
-import { derefence } from "@laoban/variables";
-import { dollarsBracesVarDefn } from "@laoban/variables/dist/src/variables";
+import { derefence, dollarsBracesVarDefn } from "@laoban/variables";
 import { fetchLinesAndParse, HasUrl, LinesAndJsonAnd, mapLinesAndJsonAnd } from "./lines.and";
-import { parserProjectAndOwner, parserRepoAndEnabled, ProjectAndOwner, ProjectDefn, RepoAndEnabled, RepoDefn } from "../rollup.commands";
+import { parseProjectAndOwnerFromJSON, parseProjectAndOwnerFromLines, parseRepoAndEnabledFromJSON, parseRepoAndEnabledFromLines, ProjectAndOwner, ProjectDefn, RepoAndEnabled, RepoDefn } from "../rollup.commands";
 import { flatMapErrorsListK, mapErrorsListK } from "../error.monad";
-import { jsonParser } from "./parser";
+import { jsonParser, Parser } from "./parser";
 
 export interface AzureDetails {
   organisation: string
@@ -22,9 +21,18 @@ export interface AzureDetails {
   fileOps: FileOps
   dic: any
   debug: boolean
+  parseProjectAndOwner: Parser<ProjectAndOwner[]>
+  parseRepoAndEnabled: Parser<RepoAndEnabled[]>
+}
+
+export function findParsers ( useJson: boolean ) {
+  return useJson ?
+    { parseProjectAndOwner: parseProjectAndOwnerFromJSON, parseRepoAndEnabled: parseRepoAndEnabledFromJSON } :
+    { parseProjectAndOwner: parseProjectAndOwnerFromLines, parseRepoAndEnabled: parseRepoAndEnabledFromLines }
 }
 
 export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>, project?: string ): AzureDetails {
+  const parsers = findParsers ( opts.jsonParser || env.AZURE_JSON_PARSER === 'true' || false )
   const organisation = opts.organisation || env.AZURE_ORG || 'Day0-POCs';
   project = project || opts.project || env.AZURE_PROJECT || 'Backstage';
   const tokenVar = opts.token_var || "SYSTEM_ACCESSTOKEN";
@@ -39,12 +47,12 @@ export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>
   const statsFile = opts.statsFile || env.AZURE_STATS_FILE || 'stats.txt';
   const dic = { organisation, project, rootRepo, projectRootRepo, projectsFile, reposFile, statsFile };
   const debug = opts.debug
-  const result = {
+  const result: AzureDetails = {
     debug,
     fileOps: realFileOps,
     dic,
     organisation: organisation,
-     project,
+    project,
     rootRepo,
     projectRootRepo,
     statsRepoPattern,
@@ -53,7 +61,8 @@ export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>
     statsFile,
     projectPattern: opts.projectPattern || env.AZURE_PROJECT_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${rootRepo}/items?path=${projectsFile}&api-version=6.0',
     reposPattern: opts.reposPattern || env.AZURE_REPOS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${projectRootRepo}/items?path=${reposFile}&api-version=6.0',
-    statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/'+ statsRepoPattern + '/items?path=${statsFile}&api-version=6.0'
+    statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/' + statsRepoPattern + '/items?path=${statsFile}&api-version=6.0',
+    ...parsers
   };
   if ( debug ) console.log ( `AzureDetails: ${JSON.stringify ( result, null, 2 )}` )
   return result
@@ -74,7 +83,7 @@ export const projectListToProjectDefns = ( azure: AzureDetails ) => async ( pl: 
 };
 
 export const projectDefn2RepoFiles = ( azure: AzureDetails ) => ( pd: ProjectDefn ): Promise<LinesAndJsonAnd<ProjectDefn, RepoAndEnabled[]>> =>
-  fetchLinesAndParse<ProjectDefn, RepoAndEnabled[]> ( azure.fileOps, `Fetching ${JSON.stringify ( pd )}`, parserRepoAndEnabled ) ( pd )
+  fetchLinesAndParse<ProjectDefn, RepoAndEnabled[]> ( azure.fileOps, `Fetching ${JSON.stringify ( pd )}`, azure.parseRepoAndEnabled ) ( pd )
 
 
 export const statDefns = ( azure: AzureDetails ) => async ( pd: LinesAndJsonAnd<ProjectDefn, RepoAndEnabled[]> ): Promise<RepoDefn[]> =>
@@ -90,7 +99,7 @@ export const stats = ( azure: AzureDetails ) => ( rd: RepoDefn ): Promise<LinesA
 
 export async function walkProjectList ( azure: AzureDetails ): Promise<LinesAndJsonAnd<HasUrl, ProjectAndOwner[]>> {
   const root = rootFile ( azure )
-  return await fetchLinesAndParse ( azure.fileOps, 'Fetching projects', parserProjectAndOwner ) ( { url: root } )
+  return await fetchLinesAndParse ( azure.fileOps, 'Fetching projects', azure.parseProjectAndOwner ) ( { url: root } )
 }
 
 

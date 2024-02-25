@@ -1,6 +1,5 @@
 import { CommandContext } from "./context";
 import { FileOps } from "@laoban/fileops";
-import { defaultIgnoreFilter, scanDirectory } from "@laoban/fileops/dist/src/scan";
 import { dump, load } from "js-yaml";
 import { deepCombineTwoObjects } from "@laoban/utils";
 

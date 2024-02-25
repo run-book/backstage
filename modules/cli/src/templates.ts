@@ -1,7 +1,7 @@
 import { ModuleDependency, RawModuleData, SourceType } from "./module";
 import { FileOps } from "@laoban/fileops";
 import { derefence } from "@laoban/variables";
-import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
+import { doubleXmlVariableDefn } from "@laoban/variables";
 import { ErrorsAnd } from "@laoban/utils";
 
 export interface RootCatalogTemplateDir {

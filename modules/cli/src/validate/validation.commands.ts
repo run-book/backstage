@@ -1,7 +1,7 @@
 import { CommandContext } from "../context";
 import { Command } from "commander";
 import { addArraysCommand } from "../debug.commands";
-import { defaultIgnoreFilter, scanDirectory } from "@laoban/fileops/dist/src/scan";
+import { defaultIgnoreFilter, scanDirectory } from "@laoban/fileops";
 import * as yaml from 'js-yaml';
 import path from "path";
 import { mapK, NameAnd } from "@laoban/utils";

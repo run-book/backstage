@@ -1,7 +1,7 @@
 import { SourceType } from "./module";
 import { derefence } from "@laoban/variables";
 import { FileOps, parseJson } from "@laoban/fileops";
-import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
+import { doubleXmlVariableDefn } from "@laoban/variables";
 
 export interface Policy {
   name: string,

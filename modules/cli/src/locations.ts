@@ -2,7 +2,7 @@ import { allChildrenUnder, makeTreeFromPathFnAndArray, Tree } from "./tree";
 import { CatalogData, isExistingGenerated, isModuleDependency, isNotExistingGenerated, ModuleData, moduleDataPath, ModuleDataWithoutErrors } from "./module";
 import { ErrorsAnd, hasErrors, mapErrors } from "@laoban/utils";
 import { derefence } from "@laoban/variables";
-import { doubleXmlVariableDefn } from "@laoban/variables/dist/src/variables";
+import { doubleXmlVariableDefn } from "@laoban/variables";
 import { FileOps } from "@laoban/fileops";
 import path from "path";
 import { cleanString } from "./strings";

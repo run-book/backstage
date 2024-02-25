@@ -20,8 +20,40 @@ export const pairToProjectAndOwner = ( one: string, two: string ): ProjectAndOwn
 export const pairToRepoAndEnabled = ( one: string, two: string ): RepoAndEnabled => ({ repo: one, enabled: two });
 
 
-export const parserProjectAndOwner: Parser<ProjectAndOwner[]> = parsePairOnLine ( pairToProjectAndOwner )
-export const parserRepoAndEnabled: Parser<RepoAndEnabled[]> = parsePairOnLine ( pairToRepoAndEnabled )
+export const parseProjectAndOwnerFromLines: Parser<ProjectAndOwner[]> = parsePairOnLine ( pairToProjectAndOwner )
+
+export interface OwnerAndEnabled {
+  owner: string
+  enabled?: boolean
+}
+//sample
+//{
+//     "backstage1": {
+//         "owner": "owner1",
+//         "enabled": true
+//     },
+// }
+export const parseProjectAndOwnerFromJSON: Parser<ProjectAndOwner[]> =
+               s => {
+                 const json: NameAnd<OwnerAndEnabled> = JSON.parse ( s )
+                 if ( typeof json !== 'object' ) throw new Error ( `Expected an object got ${s}` )
+                 return Object.entries ( json ).filter ( ( [ _, details ] ) => details.enabled )
+                   .map ( ( [ project, oAndE ] ) => ({ project, owner: oAndE.owner }) )
+               }
+
+export const parseRepoAndEnabledFromLines: Parser<RepoAndEnabled[]> = parsePairOnLine ( pairToRepoAndEnabled )
+
+
+export interface HasEnabled{
+  enabled: boolean
+}
+export const parseRepoAndEnabledFromJSON: Parser<RepoAndEnabled[]> =
+                s => {
+                  const json: NameAnd<HasEnabled> = JSON.parse ( s )
+                  if ( typeof json !== 'object' ) throw new Error ( `Expected an object got ${s}` )
+                  return Object.entries ( json )
+                    .map ( ( [ repo, oAndE ] ) => ({ repo, enabled: oAndE.enabled ? 'true' : 'false' }) )
+                }
 
 
 function reportAndReturn ( lines: any ) {
@@ -42,6 +74,7 @@ export function addAzureOptions ( command: Command ) {
     .option ( '--backstage-pattern <projectPattern>', 'How we get the list of projects file. Allowed: ${organisation}' )
     .option ( '--project-pattern <projectPattern>', 'How we get the list of repos file. Allowed ${organisation} ${project}' )
     .option ( '--stats-pattern <statsPattern>', 'How we get the stat file. Allowed ${organisation} ${project} ${repo}' )
+    .option ( '-j,--json-parser', 'Are the projects and repo files json or tsv?' )
     .option ( '--debug', 'A little debug info' )
 }
 
@@ -96,8 +129,8 @@ export function addRollupAllCommand ( context: CommandContext ) {
         .map ( ( error, errorContext ) => ({ error, errorContext }) )
       const result = { good: data, errors }
       console.log ( JSON.stringify ( result, null, 2 ) )
-      if (errors.length>0)
-        process.exit(1)
+      if ( errors.length > 0 )
+        process.exit ( 1 )
     } )
 }
 export function addRollupCommands ( context: CommandContext ) {
