@@ -1,4 +1,6 @@
 import { FileOps } from "@laoban/fileops";
+import fs from "fs";
+import path from "path";
 
 export type FileAndKind = {
   kind: string;
@@ -53,3 +55,7 @@ export const searchDirectoryForBackstageFiles = async ( fileOps: FileOps, dir: s
   const files = await listFilesRecursively ( fileOps, dir, isBackstageYamlFile );
   return addKindToFileList ( files, typeMap );
 };
+
+export async function fileExists ( fileOps: FileOps, dir: string, file: string ): Promise<boolean> {
+  return await fileOps.isFile ( fileOps.join ( dir, file ) )
+}
