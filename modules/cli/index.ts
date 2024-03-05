@@ -12,6 +12,7 @@ import { addRollupCommands } from "./src/rollup.commands";
 import { addFileApiCommand } from "./src/api/api.commands";
 import { addListCatalogsCommand, addValidateCommands } from "./src/validate/validation.commands";
 import { addMergeCommand } from "./src/merge.commands";
+import { addMakeDocs } from "./src/docs/docs.command";
 
 const fetch = require ( 'node-fetch' );
 
@@ -41,5 +42,6 @@ addMergeCommand ( context )
 addRollupCommands ( context )
 addSummariseCommand ( context )
 addValidateCommands ( context )
+addMakeDocs ( context )
 
 const parsed = program.parseAsync ( process.argv );

@@ -1,0 +1,6 @@
+site_name: <<fullname>>
+site_description: <<description>>
+plugins:
+  - techdocs-core
+nav:
+  - README: README.md
