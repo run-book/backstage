@@ -5,6 +5,7 @@ import { HasUrl, LinesAndJsonAnd } from "./azure/lines.and";
 import { parsePairOnLine, Parser } from "./azure/parser";
 import { AzureDetails, azureDetails, walkAllRepoAndEnabled, walkAllStateDefns, walkAllStateDefnsFromProject, walkAllStats, walkAllStatsFromProject, walkProjectDefns, walkProjectDefnsFromProject } from "./azure/azure.domain";
 import { Command } from "commander";
+import { parseJson } from "@laoban/fileops";
 
 
 export interface ProjectDefn extends HasUrl, ProjectAndOwner {
@@ -35,25 +36,25 @@ export interface OwnerAndEnabled {
 // }
 export const parseProjectAndOwnerFromJSON: Parser<ProjectAndOwner[]> =
                s => {
-                 const json: NameAnd<OwnerAndEnabled> = JSON.parse ( s )
+                 const json: NameAnd<OwnerAndEnabled> = parseJson<NameAnd<OwnerAndEnabled>> ( 'parseProjectAndOwnerFromJSON' ) ( s )
                  if ( typeof json !== 'object' ) throw new Error ( `Expected an object got ${s}` )
-                 return Object.entries ( json ).filter ( ( [ _, details ] ) => details.enabled === undefined? true: details.enabled )
+                 return Object.entries ( json ).filter ( ( [ _, details ] ) => details.enabled === undefined ? true : details.enabled )
                    .map ( ( [ project, oAndE ] ) => ({ project, owner: oAndE.owner }) )
                }
 
 export const parseRepoAndEnabledFromLines: Parser<RepoAndEnabled[]> = parsePairOnLine ( pairToRepoAndEnabled )
 
 
-export interface HasEnabled{
+export interface HasEnabled {
   enabled: boolean
 }
 export const parseRepoAndEnabledFromJSON: Parser<RepoAndEnabled[]> =
-                s => {
-                  const json: NameAnd<HasEnabled> = JSON.parse ( s )
-                  if ( typeof json !== 'object' ) throw new Error ( `Expected an object got ${s}` )
-                  return Object.entries ( json )
-                    .map ( ( [ repo, oAndE ] ) => ({ repo, enabled: oAndE.enabled ? 'true' : 'false' }) )
-                }
+               s => {
+                 const json: NameAnd<HasEnabled> = parseJson<NameAnd<HasEnabled>> ( 'parseRepoAndEnabledFromJSON' ) ( s )
+                 if ( typeof json !== 'object' ) throw new Error ( `Expected an object got ${s}` )
+                 return Object.entries ( json )
+                   .map ( ( [ repo, oAndE ] ) => ({ repo, enabled: oAndE.enabled ? 'true' : 'false' }) )
+               }
 
 
 function reportAndReturn ( lines: any ) {

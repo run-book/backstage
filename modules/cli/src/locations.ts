@@ -19,7 +19,7 @@ export function prefixWithDotIfNeeded ( value: string ) {
 function findLocationFileData ( roots: Tree<ModuleDataWithoutErrors>[], defaultName: string | undefined, all: boolean ): ErrorsAnd<LocationFileData>[] {
   const result: ErrorsAnd<LocationFileData>[] = roots.map ( root => {
     let name = isModuleDependency ( root.value ) ? root.value.fullname : undefined
-    if ( name === undefined && defaultName === undefined ) return [ `No name for ${root.value.pathOffset}` ]
+    if ( name === undefined && defaultName === undefined ) return [ `No name for ${root.value.catalogName}  ${root.value.pathOffset} ` ]
     if ( name === undefined ) name = defaultName + '/' + root.value.pathOffset
     return ({
       path: path.dirname ( root.value.pathOffset ) + '/catalog-info.yaml',

@@ -8,29 +8,30 @@ import { Artifact, moduleDataPath, ModuleDependency } from "../module";
 import { makeTreeFromPathFnAndArray, Tree } from "../tree";
 import { catalogInfoFilename, Policy } from "../policy";
 import { cleanString } from "../strings";
+import { gitRepo } from "../git/git";
 
 export function nameToArtifact ( fullname: string, version: string ): Artifact {
   const split = fullname?.split ( '/' )
   const common = { fullname: cleanString ( fullname ), version }
   return split?.length !== 2 ? { ...common, groupId: '', artifactId: fullname } : { ...common, groupId: split[ 0 ], artifactId: split[ 1 ] };
 }
-export function extractScm ( npm: any ) {
+export function extractScm ( npm: any, defaultScm: string | undefined ) {
   const repositoryObject = npm.repository
-  if (typeof repositoryObject === 'string') return repositoryObject
-  const repository = npm.repository?.url ?? npm.repository?.directory ?? npm.repository?.git ?? undefined
+  if ( typeof repositoryObject === 'string' ) return repositoryObject
+  const repository = npm.repository?.url ?? npm.repository?.directory ?? npm.repository?.git ?? defaultScm
   return repository
 }
 export function extractArtifactsFromNpmDependency ( dep: NameAnd<string> ): Artifact[] {
   return Object.entries ( dep ).map ( ( [ fullname, version ] ) =>
     nameToArtifact ( fullname, version ) )
 }
-export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, npm: any, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
+export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, npm: any, defaultScm: string | undefined, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
   const fullname = npm.name
   const properties = npm.backstage ?? {}
   const version = npm.version
   const artifact = nameToArtifact ( fullname, version )
   const deps = extractArtifactsFromNpmDependency ( npm.dependencies ?? {} )
-  const scm = extractScm ( npm )
+  const scm = extractScm ( npm, defaultScm )
   const description = npm.description
   const ignore = fullname === undefined ? true : properties?.ignore ?? false
   const catalogName = catalogInfoFilename ( policy, 'npm', path.dirname ( pathOffset ) )
@@ -51,8 +52,10 @@ export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, 
 }
 export async function loadNpm ( fileOps: FileOps, policy: Policy, pathOffset: string, file: string, debug?: boolean ): Promise<ErrorsAnd<ModuleDependency>> {
   const contents = await fileOps.loadFileOrUrl ( file );
+  const defaultScm = await gitRepo ( file, true )
+  if ( debug ) console.log ( 'defaultScm', file, defaultScm, file )
   const json = await parseJson ( file ) ( contents )
-  const md = simpleNpmModuleDependency ( pathOffset, policy, json, debug )
+  const md = simpleNpmModuleDependency ( pathOffset, policy, json, defaultScm, debug )
   return md;
 }
 

@@ -35,7 +35,6 @@
     "dist/src/"
   ],
   "license": "MIT",
-  "repository": "git@github.com:phil-rice/laoban.git",
   "scripts": {
     "test": "jest --config jest.config.json",
     "test:watch": "npm run test -- --watch"

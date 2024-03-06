@@ -59,9 +59,9 @@ export function azureDetails ( fileOps: FileOps, opts: any, env: NameAnd<string>
     projectsFile,
     reposFile,
     statsFile,
-    projectPattern: opts.projectPattern || env.AZURE_PROJECT_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${rootRepo}/items?path=${projectsFile}&api-version=6.0',
-    reposPattern: opts.reposPattern || env.AZURE_REPOS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/${projectRootRepo}/items?path=${reposFile}&api-version=6.0',
-    statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation}/${project}/_apis/git/repositories/' + statsRepoPattern + '/items?path=${statsFile}&api-version=6.0',
+    projectPattern: opts.projectPattern || env.AZURE_PROJECT_PATTERN || 'https://dev.azure.com/${organisation|urlEncode}/${project|urlEncode}/_apis/git/repositories/${rootRepo|urlEncode}/items?path=${projectsFile}&api-version=6.0',
+    reposPattern: opts.reposPattern || env.AZURE_REPOS_PATTERN || 'https://dev.azure.com/${organisation|urlEncode}/${project|urlEncode}/_apis/git/repositories/${projectRootRepo|urlEncode}/items?path=${reposFile|urlEncode}&api-version=6.0',
+    statsPattern: opts.statsPattern || env.AZURE_STATS_PATTERN || 'https://dev.azure.com/${organisation|urlEncode}/${project|urlEncode}/_apis/git/repositories/' + statsRepoPattern + '/items?path=${statsFile|urlEncode}&api-version=6.0',
     ...parsers
   };
   if ( debug ) console.log ( `AzureDetails: ${JSON.stringify ( result, null, 2 )}` )
