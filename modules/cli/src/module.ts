@@ -7,6 +7,9 @@ export interface Artifact {
   fullname: string
   version: string
 }
+export function isArtifact ( x: any ): x is Artifact {
+  return typeof x.groupId === 'string' && typeof x.artifactId === 'string' && typeof x.version === 'string'
+}
 export interface RawModuleData {
   description: string
   groupId: string
@@ -15,6 +18,7 @@ export interface RawModuleData {
   scm: string
   properties: NameAnd<string>
 }
+
 
 export type SourceType = 'maven' | 'npm' | 'catalogdata' | 'backstageyaml'
 

@@ -5,7 +5,7 @@ import { CommandContext } from "../context";
 import { templateDir } from "../templates";
 import { loadPolicy } from "../policy";
 import { loadTemplateAndMakeLocationFiles } from "../locations";
-import { displayErrors, ModuleData, ModuleDataWithoutErrors } from "../module";
+import { displayErrors, isArtifact, ModuleData, ModuleDataWithoutErrors } from "../module";
 import { FileOps } from "@laoban/fileops";
 import * as fs from "fs";
 import { Command } from "commander";
@@ -27,7 +27,11 @@ export async function categoriseModuleForDocs ( fileOps: FileOps, rootDir: strin
   const dir = path.join ( rootDir, path.dirname ( md.pathOffset ) )
   if ( await fileExists ( fileOps, dir, 'mkdocs.yml' ) ) return 'mkdocs.yml'
   // if ( await fileExists ( dir, 'mkdocs.yaml' ) ) return 'mkdocs.yaml'
-  if ( await fileExists ( fileOps, dir, 'README.md' ) ) return 'README.md'
+  if ( await fileExists ( fileOps, dir, 'README.md' ) )
+    if ( isArtifact ( md ) )
+      return 'README.md'
+    else
+      return 'README.md - not attached to an artifact'
   return undefined
 }
 export function addListDocs ( context: CommandContext ) {
@@ -58,14 +62,19 @@ export function addListDocs ( context: CommandContext ) {
 }
 
 export type FileAndContent = { file: string, content: string }
-export const filesToCreate = ( fileOps: FileOps, dir: string, template: string ) => async ( md: ModuleData ): Promise<FileAndContent[]> => {
+export const filesToCreate = ( fileOps: FileOps, dir: string, templateDir: string, debug?: boolean ) => async ( md: ModuleData ): Promise<FileAndContent[]> => {
   if ( hasErrors ( md ) ) return []
   const cat = await categoriseModuleForDocs ( fileOps, dir, md )
+
   if ( cat === 'README.md' ) {
     const fullDir = path.join ( dir, path.dirname ( md.pathOffset ) )
+    const templateFileName = templateDir + `/${md.sourceType}/mkdocs.template.yml`;
+    if ( debug ) console.log ( 'templateFileName', templateFileName )
+    const template = await fileOps.loadFileOrUrl ( templateFileName )
+    if ( debug ) console.log ( 'template', template )
     return [ {
       file: fileOps.join ( fullDir, 'mkdocs.yml' ),
-      content: derefence ( `Making ${fullDir}`, {}, template, { variableDefn: doubleXmlVariableDefn, throwError: true } )
+      content: derefence ( `Making ${fullDir}`, md, template, { variableDefn: doubleXmlVariableDefn, throwError: true } )
     },
       {
         file: fileOps.join ( fullDir, 'docs', 'README.md' ),
@@ -94,15 +103,19 @@ export function addMakeDocs ( context: CommandContext ) {
       const { ffts } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
       const loaded = await loadFiles ( fileOps, await loadPolicy ( fileOps, policy ), dir, ffts, debug )
       if ( debug ) console.log ( 'loaded', loaded )
-      const template = await fileOps.loadFileOrUrl ( templateDir + "/mkdocs.template.yml" )
-      ;
-      if ( debug ) console.log ( template )
-      const ftc = filesToCreate ( fileOps, dir, template )
+
+      const ftc = filesToCreate ( fileOps, dir, templateDir, debug )
       const files: FileAndContent[] = await flatMapK ( loaded, ftc )
+      if ( debug ) console.log ( 'files', files )
       if ( dryrun ) {
-        console.log ( 'Files to create' )
-        files.forEach ( f => console.log ( f.file ) )
+        console.log ( 'Files to create', files.length )
+        files.forEach ( f => console.log ( f ) )
         return
+      }
+      for ( const { file, content } of files ) {
+        console.log ( 'writing', file, content )
+        await fileOps.createDir ( path.dirname ( file ) )
+        await fileOps.saveFile ( file, content )
       }
     } )
 }
