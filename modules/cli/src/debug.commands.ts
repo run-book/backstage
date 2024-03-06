@@ -116,7 +116,7 @@ export function addTemplateVarsCommand ( context: CommandContext ) {
           const arrays = withLocalDeps.map ( ft.makeArray ( helper ) )
           for ( const array of arrays ) {
             const md = array[ array.length - 1 ]
-            const dic = makeDictionary ( { owner, lifecycle }, array )
+            const dic = makeDictionary ( md, { owner, lifecycle }, array )
             process.stdout.write ( `${md.pathOffset.padEnd ( maxFileLength )} ${md.sourceType.padEnd ( maxSourceType )} ${JSON.stringify ( dic )}\n` )
           }
         }
@@ -139,7 +139,7 @@ export function addFilesCommand ( context: CommandContext ) {
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts, maxFileLength, maxSourceType } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
       const mds = await loadFiles ( fileOps, await loadPolicy ( fileOps, policy ), dir, ffts, debug )
-      const maxCatalog = withoutErrors(mds).reduce ( ( acc, md ) => Math.max ( acc, md.catalogName.length ), 0 )
+      const maxCatalog = withoutErrors ( mds ).reduce ( ( acc, md ) => Math.max ( acc, md.catalogName.length ), 0 )
       for ( const md of mds ) {
         if ( hasErrors ( md ) ) continue
         if ( md.ignore && !all ) continue
@@ -234,12 +234,12 @@ export interface DocsData {
   dirExists: boolean,
   fileExists: boolean
 }
-async function findDocsData ( fileOps: FileOps,rootDir: string, dir: string ): Promise<DocsData> {
-  const docsDir = path.join ( rootDir,dir, 'docs' )
-  const mkdocs = path.join ( rootDir,dir, 'mkdocs.yml' )
+async function findDocsData ( fileOps: FileOps, rootDir: string, dir: string ): Promise<DocsData> {
+  const docsDir = path.join ( rootDir, dir, 'docs' )
+  const mkdocs = path.join ( rootDir, dir, 'mkdocs.yml' )
   const dirExists = await fileOps.isDirectory ( docsDir )
   const fileExists = await fileOps.isFile ( mkdocs )
-  return {  docsDir, dirExists, fileExists };
+  return { docsDir, dirExists, fileExists };
 }
 export function addDocsCommands ( context: CommandContext ) {
   context.command.command ( "docs" )
@@ -253,11 +253,11 @@ export function addDocsCommands ( context: CommandContext ) {
       const { command, fileOps, currentDirectory } = context
       const dir = command.optsWithGlobals ().directory ?? currentDirectory
       const { ffts, maxFileLength } = await loadFilesAndFilesTypesForDisplay ( fileOps, dir, fts );
-      console.log('Directory'.padEnd(maxFileLength), 'Dir'.padEnd(5), 'File'.padEnd(5))
-      console.log(''.padEnd(maxFileLength, '-'), ''.padEnd(5, '-'), ''.padEnd(5, '-'))
+      console.log ( 'Directory'.padEnd ( maxFileLength ), 'Dir'.padEnd ( 5 ), 'File'.padEnd ( 5 ) )
+      console.log ( ''.padEnd ( maxFileLength, '-' ), ''.padEnd ( 5, '-' ), ''.padEnd ( 5, '-' ) )
       for ( const { file } of ffts ) {
-        const { docsDir, dirExists, fileExists } = await findDocsData ( fileOps, dir,path.dirname ( file ) );
-        console.log ( `${path.dirname(file).padEnd ( maxFileLength )} ${dirExists.toString ().padEnd ( 5 )} ${fileExists.toString ().padEnd ( 5 )}` )
+        const { docsDir, dirExists, fileExists } = await findDocsData ( fileOps, dir, path.dirname ( file ) );
+        console.log ( `${path.dirname ( file ).padEnd ( maxFileLength )} ${dirExists.toString ().padEnd ( 5 )} ${fileExists.toString ().padEnd ( 5 )}` )
 
       }
     } )

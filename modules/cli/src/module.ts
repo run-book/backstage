@@ -61,6 +61,7 @@ export interface ModuleDependency extends Artifact {
   properties: NameAnd<string>
   //The dependencies in the pom.xml or package.json
   deps: Artifact[]
+  mkdocsExists: boolean
 }
 export type ModuleDataWithoutErrors = ModuleDependency | CatalogData
 export type ModuleData = ErrorsAnd<ModuleDependency | CatalogData>

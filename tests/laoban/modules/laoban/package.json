@@ -7,9 +7,9 @@
   "bin":             {
     "laoban": "dist/laoban.js"
   },
-  "backstage":    {
-  "techdocs": "."
-},
+  "backstage":       {
+    "techdocs": "."
+  },
   "browserslist":    {
     "development": [
       "last 1 chrome version",

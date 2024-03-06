@@ -25,7 +25,7 @@ export function extractArtifactsFromNpmDependency ( dep: NameAnd<string> ): Arti
   return Object.entries ( dep ).map ( ( [ fullname, version ] ) =>
     nameToArtifact ( fullname, version ) )
 }
-export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, npm: any, defaultScm: string | undefined, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
+export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, npm: any, defaultScm: string | undefined, mkdocsExists: boolean, debug: boolean | undefined ): ErrorsAnd<ModuleDependency> {
   const fullname = npm.name
   const properties = npm.backstage ?? {}
   const version = npm.version
@@ -48,14 +48,16 @@ export function simpleNpmModuleDependency ( pathOffset: string, policy: Policy, 
     kind: properties.kind ?? 'Component',
     properties,
     deps,
+    mkdocsExists
   }
 }
 export async function loadNpm ( fileOps: FileOps, policy: Policy, pathOffset: string, file: string, debug?: boolean ): Promise<ErrorsAnd<ModuleDependency>> {
   const contents = await fileOps.loadFileOrUrl ( file );
   const defaultScm = await gitRepo ( file, true )
+  const mkdocsExists = await fileOps.isFile ( path.join ( path.dirname ( file ), 'mkdocs.yml' ) )
   if ( debug ) console.log ( 'defaultScm', file, defaultScm, file )
   const json = await parseJson ( file ) ( contents )
-  const md = simpleNpmModuleDependency ( pathOffset, policy, json, defaultScm, debug )
+  const md = simpleNpmModuleDependency ( pathOffset, policy, json, defaultScm, mkdocsExists, debug )
   return md;
 }
 

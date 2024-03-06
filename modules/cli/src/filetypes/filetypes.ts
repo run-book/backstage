@@ -51,8 +51,13 @@ function makeDictionaryPart ( existing: any, md: ModuleDependency ) {
   }
 }
 
-function processAnnotations ( dic: any ) {
-  const docannotations = dic.techdocs ? [ `backstage.io/techdocs-ref: dir:${dic.techdocs}` ] : []
+function findTechdocsAnnotation ( md: ModuleDependency, dic: any ) {
+  if ( md?.properties?.techdocs ) return [ `backstage.io/techdocs-ref: dir:${md?.properties?.techdocs}` ]
+  if ( md.mkdocsExists ) return [ `backstage.io/techdocs-ref: dir:.` ]
+  return []
+}
+function processAnnotations ( md: ModuleDependency, dic: any ) {
+  const docannotations = findTechdocsAnnotation ( md, dic )
   const others = toCSVList ( dic.annotations )
   return [ ...docannotations, ...others ].map ( s => `    ${s}` ).join ( '\n' )
 }
@@ -62,7 +67,7 @@ function toCSVList ( commaSeparatedList: string ) {
 function toCSV ( commaSeparatedList: string ) {
   return toCSVList ( commaSeparatedList ).map ( s => `    - ${s}` ).join ( '\n' );
 }
-export function makeDictionary ( defaults: any, mds: ModuleData[] ): any {
+export function makeDictionary ( md: ModuleDependency, defaults: any, mds: ModuleData[] ): any {
   let dic: any = { dependsOn: [], ...defaults }
   for ( const md of mds ) {
     if ( hasErrors ( md ) ) dic.errors = (dic.errors ?? []).concat ( md )
@@ -70,7 +75,7 @@ export function makeDictionary ( defaults: any, mds: ModuleData[] ): any {
   }
   dic.dependsOn = dic.dependsOn.length === 0 ? '' : 'dependsOn: \n' + dic.dependsOn.join ( '\n' )
   dic.tags = toCSV ( dic.tags )
-  dic.annotations = processAnnotations ( dic )
+  dic.annotations = processAnnotations ( md, dic )
   return dic
 }
 
@@ -85,7 +90,7 @@ export async function defaultMakeCatalogFromArray ( fileOps: FileOps, defaults: 
   if ( hasErrors ( md ) ) return md
   if ( isCatalogData ( md ) ) return md
   if ( !isModuleDependency ( md ) ) throw new Error ( `The last element in the array is of unknown type, ${JSON.stringify ( md )}` )
-  const dic = makeDictionary ( defaults, array )
+  const dic = makeDictionary ( md, defaults, array )
   const value = await applyCatalogTemplateForKind ( fileOps, templateDir, md, dic )
   if ( hasErrors ( value ) ) return value
   return { ...md, catalogData: true, value, existingGenerated: false }
@@ -111,7 +116,7 @@ export async function findFilesAndFileType ( fileOps: FileOps, dir: string, fts:
   } );
 }
 
-export function withoutErrors(mds: ModuleData[] ): ModuleDataWithoutErrors[] {
+export function withoutErrors ( mds: ModuleData[] ): ModuleDataWithoutErrors[] {
   return mds.filter ( md => !hasErrors ( md ) ) as ModuleDataWithoutErrors[]
 }
 export async function loadFiles ( fileOps: FileOps, policy: Policy, dir: string, fts: FileAndFileType[], debug?: boolean ): Promise<ModuleData[]> {

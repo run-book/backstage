@@ -31,7 +31,18 @@ export const executeScriptInShell = ( cwd: string, cmd: string, debug?: boolean 
 export async function gitRepo ( dir: string, debug?: boolean ): Promise<string | undefined> {
   const gitResult = await executeScriptInShell ( path.dirname(dir), 'git remote get-url origin' )
   if ( isSuccessfulGitResult ( gitResult ) )
-    return gitResult.message.trim()
+    {
+      const rawUrl = gitResult.message.trim();
+      try {
+        const url = new URL ( rawUrl )
+        url.username = ''
+        url.password = ''
+        return url.toString ()
+      }catch ( e   )      {
+        // console.log('gitRepo', e, rawUrl)
+        return rawUrl
+      }
+    }
   else
     return undefined
 }
